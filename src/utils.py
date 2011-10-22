@@ -20,6 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import gtk
+import pygtk
+pygtk.require('2.0')
+
 def isCollideRect((cx, cy), (x, y, w, h)):
     '''Whether coordinate collide with rectangle.'''
     return (x <= cx <= x + w and y <= cy <= y + h)
@@ -27,3 +31,9 @@ def isCollideRect((cx, cy), (x, y, w, h)):
 def isInRect((cx, cy), (x, y, w, h)):
     '''Whether coordinate in rectangle.'''
     return (x < cx < x + w and y < cy < y + h)
+
+def setCursor(widget, cursorType):
+    '''Set cursor.'''
+    widget.window.set_cursor(gtk.gdk.Cursor(cursorType))
+    
+    return False

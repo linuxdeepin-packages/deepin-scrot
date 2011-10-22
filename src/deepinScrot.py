@@ -38,7 +38,9 @@ class DeepinScrot:
         self.width = self.height = 0
         self.x = self.y = self.rectWidth = self.rectHeight = 0
         self.frameColor = "#FFFF0"
-        self.frameLineWidth = 1
+        self.frameLineWidth = 2
+        self.dragPosition = None
+        self.dragStartX = self.dragStartY = self.dragStartOffsetX = self.drawStartOffsetY = 0
         self.dragPointRadius = 4
         self.dragFlag = False
         
@@ -77,7 +79,73 @@ class DeepinScrot:
         
         if self.action == ACTION_INIT:
             (self.x, self.y) = self.getEventCoord(event)
+        elif self.action == ACTION_SELECT:
+            # Init drag position.
+            self.dragPosition = self.getPosition(event)
+            
+            # Set cursor.
+            self.setCursor(self.dragPosition)
+            
+            # Get drag coord and offset.
+            (self.dragStartX, self.dragStartY) = self.getEventCoord(event)
+            self.dragStartOffsetX = self.dragStartX - self.x
+            self.dragStartOffsetY = self.dragStartY - self.y
     
+    def motionNotify(self, widget, event):
+        '''Motion notify.'''
+        if self.dragFlag:
+            print "motionNotify: %s" % (str(event.get_root_coords()))
+            (ex, ey) = self.getEventCoord(event)
+            
+            if self.action == ACTION_INIT:
+                (self.rectWidth, self.rectHeight) = (ex - self.x, ey - self.y)
+                self.window.queue_draw()
+            elif self.action == ACTION_SELECT:
+                if self.dragPosition == DRAG_INSIDE:
+                    self.x = min(max(ex - self.dragStartOffsetX, 0), self.width - self.rectWidth)
+                    self.y = min(max(ey - self.dragStartOffsetY, 0), self.height - self.rectHeight)
+                elif self.dragPosition == DRAG_TOP_SIDE:
+                    maxY = self.y + self.rectHeight
+                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
+                    self.y = min(ey, maxY) 
+                elif self.dragPosition == DRAG_BOTTOM_SIDE:
+                    self.rectHeight = max(0, ey - self.y)
+                elif self.dragPosition == DRAG_LEFT_SIDE:
+                    maxX = self.x + self.rectWidth
+                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
+                    self.x = min(ex, maxX)
+                elif self.dragPosition == DRAG_RIGHT_SIDE:
+                    self.rectWidth = max(0, ex - self.x)
+                elif self.dragPosition == DRAG_TOP_LEFT_CORNER:
+                    maxY = self.y + self.rectHeight
+                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
+                    self.y = min(ey, maxY) 
+                    
+                    maxX = self.x + self.rectWidth
+                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
+                    self.x = min(ex, maxX)
+                elif self.dragPosition == DRAG_TOP_RIGHT_CORNER:
+                    maxY = self.y + self.rectHeight
+                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
+                    self.y = min(ey, maxY) 
+                    
+                    self.rectWidth = max(0, ex - self.x)
+                elif self.dragPosition == DRAG_BOTTOM_LEFT_CORNER:
+                    self.rectHeight = max(0, ey - self.y)
+                    
+                    maxX = self.x + self.rectWidth
+                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
+                    self.x = min(ex, maxX)
+                elif self.dragPosition == DRAG_BOTTOM_RIGHT_CORNER:
+                    self.rectHeight = max(0, ey - self.y)
+                    
+                    self.rectWidth = max(0, ex - self.x)
+                 
+                self.window.queue_draw()
+        else:
+            if self.action == ACTION_SELECT:
+                self.setCursor(self.getPosition(event))
+        
     def buttonRelease(self, widget, event):
         '''Button release.'''
         self.dragFlag = False
@@ -101,17 +169,7 @@ class DeepinScrot:
                 self.y = ey
                 
             self.window.queue_draw()
-        
-    def motionNotify(self, widget, event):
-        '''Motion notify.'''
-        if self.dragFlag:
-            print "motionNotify: %s" % (str(event.get_root_coords()))
             
-            if self.action == ACTION_INIT:
-                (ex, ey) = self.getEventCoord(event)
-                (self.rectWidth, self.rectHeight) = (ex - self.x, ey - self.y)
-                self.window.queue_draw()
-        
     def redraw(self, widget, event):
         '''Redraw.'''
         # Init cairo.
@@ -257,7 +315,7 @@ class DeepinScrot:
             (self.x + self.rectWidth - self.dragPointRadius, self.y + self.rectHeight / 2 - self.dragPointRadius),
             )
         
-    def getDragPosition(self, event):
+    def getPosition(self, event):
         '''Get drag position.'''
         # Get event position.
         (ex, ey) = self.getEventCoord(event)
@@ -287,6 +345,29 @@ class DeepinScrot:
             return DRAG_RIGHT_SIDE
         else:
             return DRAG_OUTSIDE
+        
+    def setCursor(self, position):
+        '''Set cursor.'''
+        if position == DRAG_INSIDE:
+            setCursor(self.window, gtk.gdk.FLEUR)
+        elif position == DRAG_OUTSIDE:
+            setCursor(self.window, gtk.gdk.TOP_LEFT_ARROW)
+        elif position == DRAG_TOP_LEFT_CORNER:
+            setCursor(self.window, gtk.gdk.TOP_LEFT_CORNER)
+        elif position == DRAG_TOP_RIGHT_CORNER:
+            setCursor(self.window, gtk.gdk.TOP_RIGHT_CORNER)
+        elif position == DRAG_BOTTOM_LEFT_CORNER:
+            setCursor(self.window, gtk.gdk.BOTTOM_LEFT_CORNER)
+        elif position == DRAG_BOTTOM_RIGHT_CORNER:
+            setCursor(self.window, gtk.gdk.BOTTOM_RIGHT_CORNER)
+        elif position == DRAG_TOP_SIDE:
+            setCursor(self.window, gtk.gdk.TOP_SIDE)
+        elif position == DRAG_BOTTOM_SIDE:
+            setCursor(self.window, gtk.gdk.BOTTOM_SIDE)
+        elif position == DRAG_LEFT_SIDE:
+            setCursor(self.window, gtk.gdk.LEFT_SIDE)
+        elif position == DRAG_RIGHT_SIDE:
+            setCursor(self.window, gtk.gdk.RIGHT_SIDE)
     
 if __name__ == "__main__":
     DeepinScrot()
