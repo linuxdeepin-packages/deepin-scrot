@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from utils import *
 from math import *
 from draw import *
 from constant import *
@@ -36,8 +37,8 @@ class DeepinScrot:
         self.action = ACTION_INIT
         self.width = self.height = 0
         self.x = self.y = self.rectWidth = self.rectHeight = 0
-        # self.x = self.y = self.rectWidth = self.rectHeight = 300
         self.frameColor = "#FFFF0"
+        self.frameLineWidth = 1
         self.dragPointRadius = 4
         self.dragFlag = False
         
@@ -122,11 +123,12 @@ class DeepinScrot:
         # Draw mask.
         self.drawMask(cr)
         
-        # Draw frame.
-        self.drawFrame(cr)
-        
-        # Draw drag point.
-        self.drawDragPoint(cr)
+        if not (self.action == ACTION_INIT and self.dragFlag == False):
+            # Draw frame.
+            self.drawFrame(cr)
+            
+            # Draw drag point.
+            self.drawDragPoint(cr)
             
         if widget.get_child() != None:
             widget.propagate_expose(widget.get_child(), event)
@@ -177,6 +179,7 @@ class DeepinScrot:
     def drawFrame(self, cr):
         '''Draw frame.'''
         cr.set_source_rgb(*colorHexToCairo(self.frameColor))
+        cr.set_line_width(self.frameLineWidth)
         cr.rectangle(self.x, self.y, self.rectWidth, self.rectHeight)
         cr.stroke()
         
@@ -232,6 +235,58 @@ class DeepinScrot:
     def destroy(self, widget, data=None):
         '''Destroy main window.'''
         gtk.main_quit()
-
+        
+    def getDragPointCoords(self):
+        '''Get drag point coords.'''
+        return (
+            # Top left.
+            (self.x - self.dragPointRadius, self.y - self.dragPointRadius), 
+            # Top right.
+            (self.x + self.rectWidth - self.dragPointRadius, self.y - self.dragPointRadius),
+            # Bottom left.
+            (self.x - self.dragPointRadius, self.y + self.rectHeight - self.dragPointRadius),
+            # Bottom right.
+            (self.x + self.rectWidth - self.dragPointRadius, self.y + self.rectHeight - self.dragPointRadius),
+            # Top side.
+            (self.x + self.rectWidth / 2 - self.dragPointRadius, self.y - self.dragPointRadius),
+            # Bottom side.
+            (self.x + self.rectWidth / 2 - self.dragPointRadius, self.y + self.rectHeight - self.dragPointRadius),
+            # Left side.
+            (self.x - self.dragPointRadius, self.y + self.rectHeight / 2 - self.dragPointRadius),
+            # Right side.
+            (self.x + self.rectWidth - self.dragPointRadius, self.y + self.rectHeight / 2 - self.dragPointRadius),
+            )
+        
+    def getDragPosition(self, event):
+        '''Get drag position.'''
+        # Get event position.
+        (ex, ey) = self.getEventCoord(event)
+        
+        # Get drag point coords.
+        pWidth = pHeight = self.dragPointRadius * 2
+        ((tlX, tlY), (trX, trY), (blX, blY), (brX, brY), (tX, tY), (bX, bY), (lX, lY), (rX, rY)) = self.getDragPointCoords()
+        
+        # Calcuate drag position.
+        if isInRect((ex, ey), (self.x, self.y, self.rectWidth, self.rectHeight)):
+            return DRAG_INSIDE
+        elif isCollideRect((ex, ey), (tlX, tlY, pWidth, pHeight)):
+            return DRAG_TOP_LEFT_CORNER
+        elif isCollideRect((ex, ey), (trX, trY, pWidth, pHeight)):
+            return DRAG_TOP_RIGHT_CORNER
+        elif isCollideRect((ex, ey), (blX, blY, pWidth, pHeight)):
+            return DRAG_BOTTOM_LEFT_CORNER
+        elif isCollideRect((ex, ey), (brX, brY, pWidth, pHeight)):
+            return DRAG_BOTTOM_RIGHT_CORNER
+        elif isCollideRect((ex, ey), (tX, tY, pWidth, pHeight)) or isCollideRect((ex, ey), (self.x, self.y, self.rectWidth, self.frameLineWidth)):
+            return DRAG_TOP_SIDE
+        elif isCollideRect((ex, ey), (bX, bY, pWidth, pHeight)) or isCollideRect((ex, ey), (self.x, self.y + self.rectHeight, self.rectWidth, self.frameLineWidth)):
+            return DRAG_BOTTOM_SIDE
+        elif isCollideRect((ex, ey), (lX, lY, pWidth, pHeight)) or isCollideRect((ex, ey), (self.x, self.y, self.frameLineWidth, self.rectHeight)):
+            return DRAG_LEFT_SIDE
+        elif isCollideRect((ex, ey), (rX, rY, pWidth, pHeight)) or isCollideRect((ex, ey), (self.x + self.rectWidth, self.y, self.frameLineWidth, self.rectHeight)):
+            return DRAG_RIGHT_SIDE
+        else:
+            return DRAG_OUTSIDE
+    
 if __name__ == "__main__":
     DeepinScrot()

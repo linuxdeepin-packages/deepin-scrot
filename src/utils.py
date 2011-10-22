@@ -20,23 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ACTION_INIT = 0
-ACTION_SELECT = 1
-ACTION_RECTANGLE = 2
-ACTION_ELLIPSE = 3
-ACTION_ARROW = 4
-ACTION_PEN = 5
-ACTION_PIXELIZE = 6
-ACTION_TEXT = 7
-ACTION_STEP = 8
+def isCollideRect((cx, cy), (x, y, w, h)):
+    '''Whether coordinate collide with rectangle.'''
+    return (x <= cx <= x + w and y <= cy <= y + h)
 
-DRAG_INSIDE = 0
-DRAG_OUTSIDE = 1
-DRAG_TOP_LEFT_CORNER = 2
-DRAG_TOP_RIGHT_CORNER = 3
-DRAG_BOTTOM_LEFT_CORNER = 4
-DRAG_BOTTOM_RIGHT_CORNER = 5
-DRAG_TOP_SIDE = 6
-DRAG_BOTTOM_SIDE = 7
-DRAG_LEFT_SIDE = 8
-DRAG_RIGHT_SIDE = 9
+def isInRect((cx, cy), (x, y, w, h)):
+    '''Whether coordinate in rectangle.'''
+    return (x < cx < x + w and y < cy < y + h)
