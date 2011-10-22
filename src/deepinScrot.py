@@ -105,41 +105,25 @@ class DeepinScrot:
                     self.x = min(max(ex - self.dragStartOffsetX, 0), self.width - self.rectWidth)
                     self.y = min(max(ey - self.dragStartOffsetY, 0), self.height - self.rectHeight)
                 elif self.dragPosition == DRAG_TOP_SIDE:
-                    maxY = self.y + self.rectHeight
-                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
-                    self.y = min(ey, maxY) 
+                    self.dragFrameTop(ex, ey)
                 elif self.dragPosition == DRAG_BOTTOM_SIDE:
-                    self.rectHeight = max(0, ey - self.y)
+                    self.dragFrameBottom(ex, ey)
                 elif self.dragPosition == DRAG_LEFT_SIDE:
-                    maxX = self.x + self.rectWidth
-                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
-                    self.x = min(ex, maxX)
+                    self.dragFrameLeft(ex, ey)
                 elif self.dragPosition == DRAG_RIGHT_SIDE:
-                    self.rectWidth = max(0, ex - self.x)
+                    self.dragFrameRight(ex, ey)
                 elif self.dragPosition == DRAG_TOP_LEFT_CORNER:
-                    maxY = self.y + self.rectHeight
-                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
-                    self.y = min(ey, maxY) 
-                    
-                    maxX = self.x + self.rectWidth
-                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
-                    self.x = min(ex, maxX)
+                    self.dragFrameTop(ex, ey)
+                    self.dragFrameLeft(ex, ey)
                 elif self.dragPosition == DRAG_TOP_RIGHT_CORNER:
-                    maxY = self.y + self.rectHeight
-                    self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
-                    self.y = min(ey, maxY) 
-                    
-                    self.rectWidth = max(0, ex - self.x)
+                    self.dragFrameTop(ex, ey)
+                    self.dragFrameRight(ex, ey)
                 elif self.dragPosition == DRAG_BOTTOM_LEFT_CORNER:
-                    self.rectHeight = max(0, ey - self.y)
-                    
-                    maxX = self.x + self.rectWidth
-                    self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
-                    self.x = min(ex, maxX)
+                    self.dragFrameBottom(ex, ey)
+                    self.dragFrameLeft(ex, ey)
                 elif self.dragPosition == DRAG_BOTTOM_RIGHT_CORNER:
-                    self.rectHeight = max(0, ey - self.y)
-                    
-                    self.rectWidth = max(0, ex - self.x)
+                    self.dragFrameBottom(ex, ey)
+                    self.dragFrameRight(ex, ey)
                  
                 self.window.queue_draw()
         else:
@@ -368,6 +352,26 @@ class DeepinScrot:
             setCursor(self.window, gtk.gdk.LEFT_SIDE)
         elif position == DRAG_RIGHT_SIDE:
             setCursor(self.window, gtk.gdk.RIGHT_SIDE)
+            
+    def dragFrameTop(self, ex, ey):
+        '''Drag frame top.'''
+        maxY = self.y + self.rectHeight
+        self.rectHeight = self.rectHeight - min(self.rectHeight, (ey - self.y))
+        self.y = min(ey, maxY) 
+    
+    def dragFrameBottom(self, ex, ey):
+        '''Drag frame bottom.'''
+        self.rectHeight = max(0, ey - self.y)
+    
+    def dragFrameLeft(self, ex, ey):
+        '''Drag frame left.'''
+        maxX = self.x + self.rectWidth
+        self.rectWidth = self.rectWidth - min(self.rectWidth, (ex - self.x))
+        self.x = min(ex, maxX)
+    
+    def dragFrameRight(self, ex, ey):
+        '''Drag frame right.'''
+        self.rectWidth = max(0, ex - self.x)
     
 if __name__ == "__main__":
     DeepinScrot()
