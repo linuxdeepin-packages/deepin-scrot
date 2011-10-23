@@ -128,3 +128,18 @@ class LineAction(Action):
 
             cr.set_source_rgb(*colorHexToCairo(self.color))
             cr.stroke()
+
+class TextAction(Action):
+    '''Text action.'''
+	
+    def __init__(self, aType, size, color, content):
+        '''Text action.'''
+        Action.__init__(self, aType, size, color)
+        self.content = content
+        
+    def expose(self, cr):
+        '''Expose.'''
+        cr.set_source_rgb(*colorHexToCairo(self.color))
+        cr.set_font_size(self.size)
+        cr.move_to(self.startX, self.startY + self.size)
+        cr.show_text(self.content)

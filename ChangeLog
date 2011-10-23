@@ -2,6 +2,7 @@
 
 2011-10-23 Yong Wang <lazycat.manatee@gmail.com>
 	* Add new action: rectangle, ellipse, arrow, line.
+	* Add text action.
 
 2011-10-21 Yong Wang <lazycat.manatee@gmail.com>
 	* Finish basic select action.

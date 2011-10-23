@@ -75,6 +75,9 @@ class DeepinScrot:
         # Init toolbar window.
         self.initToolbar()
         
+        # Init text window.
+        self.initTextWindow()
+        
         # Show.
         self.window.show_all()
         
@@ -112,6 +115,48 @@ class DeepinScrot:
         self.actionCancelButton = self.createActionButton("cancel.png")
         self.actionCancelButton.connect("button-press-event", lambda w, e: self.destroy(self.window))
         self.actionFinishButton = self.createActionButton("finish.png")
+        
+    def initTextWindow(self):
+        '''Init text window.'''
+        # Init window.
+        # Use WINDOW_POPUP to ignore Window Manager's policy,
+        # otherwise text window won't move to place you want, such as, desktop environment have global menu.
+        self.textWindow = gtk.Window(gtk.WINDOW_POPUP)
+        self.textWindow.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+        self.textWindow.set_keep_above(True)
+        self.textWindow.set_decorated(False)
+        self.textWindow.set_resizable(False)
+        self.textWindow.set_transient_for(self.window)
+        
+        self.textView = gtk.TextView()
+        self.textView.set_wrap_mode(gtk.WRAP_WORD)
+        self.textWindow.add(self.textView)
+        self.textWindow.set_focus(self.textView)
+        
+    def showTextWindow(self, (ex, ey)):
+        '''Show text window.'''
+        offset = 5
+        self.textWindow.show_all()
+        self.textWindow.move(ex, ey)
+        self.textWindow.set_geometry_hints(
+            self.textView, -1, -1, 
+            self.x + self.rectWidth - ex - offset,
+            self.y + self.rectHeight - ey - offset,
+            self.x + self.rectWidth - ex - offset,
+            self.y + self.rectHeight - ey - offset,
+            100, 10, 10, 10
+            )
+        self.textWindow.grab_focus()
+        
+    def hideTextWindow(self):
+        '''Hide text window.'''
+        self.textView.get_buffer().set_text("")
+        self.textWindow.hide_all()
+    
+    def getInputText(self):
+        '''Get input text.'''
+        textBuffer = self.textView.get_buffer()
+        return (textBuffer.get_text(textBuffer.get_start_iter(), textBuffer.get_end_iter())).rstrip(" ")
         
     def setActionType(self, aType):
         '''Set action. type'''
@@ -195,6 +240,20 @@ class DeepinScrot:
             if self.getPosition(event) == DRAG_INSIDE:
                 self.currentAction = LineAction(ACTION_LINE, 2, "#FF0000")
                 self.currentAction.startDraw(self.getEventCoord(event))
+        elif self.action == ACTION_TEXT:
+            if self.textWindow.get_visible():
+                content = self.getInputText()
+                if content != "":
+                    textAction = TextAction(ACTION_TEXT, 15, "#FF0000", content)
+                    textAction.startDraw(self.textWindow.get_window().get_origin())
+                    self.actionList.append(textAction) 
+                    self.hideTextWindow()
+                    
+                    self.window.queue_draw()
+                else:
+                    self.hideTextWindow()
+            else:
+                self.showTextWindow(self.getEventCoord(event))
     
     def motionNotify(self, widget, event):
         '''Motion notify.'''
