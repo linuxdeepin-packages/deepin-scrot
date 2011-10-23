@@ -111,6 +111,7 @@ class DeepinScrot:
         self.actionTextButton = self.createActionButton("text.png")
         self.actionTextButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_TEXT))
         self.actionUndoButton = self.createActionButton("undo.png")
+        self.actionUndoButton.connect("button-press-event", lambda w, e: self.undo())
         self.actionSaveButton = self.createActionButton("save.png")
         self.actionCancelButton = self.createActionButton("cancel.png")
         self.actionCancelButton.connect("button-press-event", lambda w, e: self.destroy(self.window))
@@ -592,6 +593,22 @@ class DeepinScrot:
     def dragFrameRight(self, ex, ey):
         '''Drag frame right.'''
         self.rectWidth = max(0, ex - self.x)
+        
+    def undo(self):
+        '''Undo'''
+        if self.textWindow.get_visible():
+            self.hideTextWindow()
+        
+        if len(self.actionList) == 0:
+            if self.action == ACTION_SELECT:
+                self.destroy(self.window)
+        else:
+            self.actionList.pop()
+            
+            if len(self.actionList) == 0:
+                self.action = ACTION_SELECT
+            
+            self.window.queue_draw()
     
 if __name__ == "__main__":
     DeepinScrot()
