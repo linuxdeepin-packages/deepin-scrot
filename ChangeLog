@@ -4,6 +4,7 @@
 	* Add new action: rectangle, ellipse, arrow, line.
 	* Add text action.
 	* Finish undo function.
+	* Finish save features.
 
 2011-10-21 Yong Wang <lazycat.manatee@gmail.com>
 	* Finish basic select action.

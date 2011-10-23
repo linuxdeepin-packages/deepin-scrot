@@ -113,9 +113,11 @@ class DeepinScrot:
         self.actionUndoButton = self.createActionButton("undo.png")
         self.actionUndoButton.connect("button-press-event", lambda w, e: self.undo())
         self.actionSaveButton = self.createActionButton("save.png")
+        self.actionSaveButton.connect("button-press-event", lambda w, e: self.saveSnapshotToFile())
         self.actionCancelButton = self.createActionButton("cancel.png")
         self.actionCancelButton.connect("button-press-event", lambda w, e: self.destroy(self.window))
         self.actionFinishButton = self.createActionButton("finish.png")
+        self.actionFinishButton.connect("button-press-event", lambda w, e: self.saveSnapshot())
         
     def initTextWindow(self):
         '''Init text window.'''
@@ -363,6 +365,75 @@ class DeepinScrot:
             
             self.window.queue_draw()
             
+    def saveSnapshotToFile(self):
+        '''Save file to file.'''
+        dialog = gtk.FileChooserDialog(
+            "Open..",
+            None,
+            gtk.FILE_CHOOSER_ACTION_OPEN,
+            (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+             gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        
+        filter = gtk.FileFilter()
+        filter.set_name("All files")
+        filter.add_pattern("*")
+        dialog.add_filter(filter)
+        
+        filter = gtk.FileFilter()
+        filter.set_name("Images")
+        filter.add_mime_type("image/png")
+        filter.add_mime_type("image/jpeg")
+        filter.add_mime_type("image/gif")
+        filter.add_pattern("*.png")
+        filter.add_pattern("*.jpg")
+        filter.add_pattern("*.gif")
+        filter.add_pattern("*.tif")
+        filter.add_pattern("*.xpm")
+        dialog.add_filter(filter)
+        
+        response = dialog.run()
+        if response == gtk.RESPONSE_OK:
+            filename = dialog.get_filename()
+            self.saveSnapshot(filename)
+            print "Save snapshot to %s" % (filename)
+        elif response == gtk.RESPONSE_CANCEL:
+            print 'Closed, no files selected'
+        dialog.destroy()
+            
+    def saveSnapshot(self, filename=None):
+        '''Save snapshot.'''
+        # Init cairo.
+        cr = self.window.window.cairo_create()
+        
+        # Draw desktop background.
+        self.drawDesktopBackground(cr)
+        
+        # Draw action list.
+        for action in self.actionList:
+            action.expose(cr)
+            
+        # Get snapshot.
+        pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, self.rectWidth, self.rectHeight)
+        pixbuf.get_from_drawable(
+            self.window.get_window(), self.window.get_window().get_colormap(),
+            self.x, self.y,
+            0, 0,
+            self.rectWidth, self.rectHeight)
+        
+        # Save snapshot.
+        if filename == None:
+            # Save snapshot to clipboard if filename is None.
+            clipboard = gtk.clipboard_get()
+            clipboard.set_image(pixbuf)
+            clipboard.store()
+        else:
+            # Otherwise save to local file.
+            pixbuf.save(filename, "png")
+        
+        # Exit
+        self.destroy(self.window)
+        
     def redraw(self, widget, event):
         '''Redraw.'''
         # Init cairo.
