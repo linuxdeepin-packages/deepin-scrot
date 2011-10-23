@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from action import *
 from utils import *
 from math import *
 from draw import *
@@ -43,6 +44,14 @@ class DeepinScrot:
         self.dragStartX = self.dragStartY = self.dragStartOffsetX = self.drawStartOffsetY = 0
         self.dragPointRadius = 4
         self.dragFlag = False
+        self.showToolbarFlag = False
+        self.toolbarOffsetX = 10
+        self.toolbarOffsetY = 10
+        self.toolbarHeight = 50
+        
+        # Init action list.
+        self.currentAction = None
+        self.actionList = []
         
         # Get desktop background.
         self.desktopBackground = self.getDesktopSnapshot() 
@@ -63,9 +72,84 @@ class DeepinScrot:
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
         
+        # Init toolbar window.
+        self.initToolbar()
+        
         # Show.
         self.window.show_all()
+        
         gtk.main()
+        
+    def initToolbar(self):
+        '''Init toolbar.'''
+        # Init window.
+        # Use WINDOW_POPUP to ignore Window Manager's policy,
+        # otherwise toolbar window won't move to place you want, such as, desktop environment have global menu.
+        self.toolbarWindow = gtk.Window(gtk.WINDOW_POPUP)
+        self.toolbarWindow.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
+        self.toolbarWindow.set_keep_above(True)
+        self.toolbarWindow.set_decorated(False)
+        self.toolbarWindow.set_resizable(False)
+        self.toolbarWindow.set_transient_for(self.window)
+        self.toolbarWindow.set_default_size(100, 24)
+        
+        # Add action button.
+        self.toolBox = gtk.HBox()
+        self.toolbarWindow.add(self.toolBox)
+        
+        self.actionRectangleButton = self.createActionButton("rectangle.png")
+        self.actionRectangleButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_RECTANGLE))
+        self.actionEllipseButton = self.createActionButton("ellipse.png")
+        self.actionEllipseButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_ELLIPSE))
+        self.actionArrowButton = self.createActionButton("arrow.png")
+        self.actionArrowButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_ARROW))
+        self.actionLineButton = self.createActionButton("line.png")
+        self.actionLineButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_LINE))
+        self.actionTextButton = self.createActionButton("text.png")
+        self.actionTextButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_TEXT))
+        self.actionUndoButton = self.createActionButton("undo.png")
+        self.actionSaveButton = self.createActionButton("save.png")
+        self.actionCancelButton = self.createActionButton("cancel.png")
+        self.actionCancelButton.connect("button-press-event", lambda w, e: self.destroy(self.window))
+        self.actionFinishButton = self.createActionButton("finish.png")
+        
+    def setActionType(self, aType):
+        '''Set action. type'''
+        self.action = aType    
+        self.currentAction = None
+        
+    def createActionButton(self, iconName):
+        '''Create action button.'''
+        actionButton = gtk.EventBox()
+        actionButton.set_visible_window(False)
+        drawSimpleButton(actionButton, iconName)
+        self.toolBox.pack_start(actionButton)
+        
+        return actionButton
+        
+    def showToolbar(self):
+        '''Show toolbar.'''
+        self.showToolbarFlag = True
+        self.toolbarWindow.show_all()
+        
+    def hideToolbar(self):
+        '''Hide toolbar.'''
+        self.showToolbarFlag = False
+        self.toolbarWindow.hide_all()
+        
+    def adjustToolbar(self):
+        '''Adjust toolbar position.'''
+        toolbarWidth = self.toolbarWindow.allocation.width
+        toolbarHeight = self.toolbarWindow.allocation.height
+        toolbarX = self.x + self.rectWidth - toolbarWidth - self.toolbarOffsetX
+        if self.y + self.rectHeight + self.toolbarOffsetY + self.toolbarHeight < self.height:
+            toolbarY = self.y + self.rectHeight + self.toolbarOffsetY
+        elif self.y - self.toolbarOffsetY - self.toolbarHeight > 0:
+            toolbarY = self.y - self.toolbarOffsetY - toolbarHeight
+        else:
+            toolbarY = self.y + self.toolbarOffsetY
+            
+        self.toolbarWindow.move(int(toolbarX), int(toolbarY))
         
     def getEventCoord(self, event):
         '''Get event coord.'''
@@ -75,7 +159,8 @@ class DeepinScrot:
     def buttonPress(self, widget, event):
         '''Button press.'''
         self.dragFlag = True
-        print "buttonPress: %s" % (str(event.get_root_coords()))
+        # print "*****"
+        # print "buttonPress: %s" % (str(event.get_root_coords()))
         
         if self.action == ACTION_INIT:
             (self.x, self.y) = self.getEventCoord(event)
@@ -90,11 +175,31 @@ class DeepinScrot:
             (self.dragStartX, self.dragStartY) = self.getEventCoord(event)
             self.dragStartOffsetX = self.dragStartX - self.x
             self.dragStartOffsetY = self.dragStartY - self.y
+        elif self.action == ACTION_RECTANGLE:
+            # Just create new action when drag position at inside of select area.
+            if self.getPosition(event) == DRAG_INSIDE:
+                self.currentAction = RectangleAction(ACTION_RECTANGLE, 2, "#FF0000")
+                self.currentAction.startDraw(self.getEventCoord(event))
+        elif self.action == ACTION_ELLIPSE:
+            # Just create new action when drag position at inside of select area.
+            if self.getPosition(event) == DRAG_INSIDE:
+                self.currentAction = EllipseAction(ACTION_ELLIPSE, 2, "#FF0000")
+                self.currentAction.startDraw(self.getEventCoord(event))
+        elif self.action == ACTION_ARROW:
+            # Just create new action when drag position at inside of select area.
+            if self.getPosition(event) == DRAG_INSIDE:
+                self.currentAction = ArrowAction(ACTION_ARROW, 2, "#FF0000")
+                self.currentAction.startDraw(self.getEventCoord(event))
+        elif self.action == ACTION_LINE:
+            # Just create new action when drag position at inside of select area.
+            if self.getPosition(event) == DRAG_INSIDE:
+                self.currentAction = LineAction(ACTION_LINE, 2, "#FF0000")
+                self.currentAction.startDraw(self.getEventCoord(event))
     
     def motionNotify(self, widget, event):
         '''Motion notify.'''
         if self.dragFlag:
-            print "motionNotify: %s" % (str(event.get_root_coords()))
+            # print "motionNotify: %s" % (str(event.get_root_coords()))
             (ex, ey) = self.getEventCoord(event)
             
             if self.action == ACTION_INIT:
@@ -126,6 +231,22 @@ class DeepinScrot:
                     self.dragFrameRight(ex, ey)
                  
                 self.window.queue_draw()
+            elif self.action == ACTION_RECTANGLE:
+                self.currentAction.drawing((ex, ey), (self.x, self.y, self.rectWidth, self.rectHeight))
+                
+                self.window.queue_draw()
+            elif self.action == ACTION_ELLIPSE:
+                self.currentAction.drawing((ex, ey), (self.x, self.y, self.rectWidth, self.rectHeight))
+                
+                self.window.queue_draw()
+            elif self.action == ACTION_ARROW:
+                self.currentAction.drawing((ex, ey), (self.x, self.y, self.rectWidth, self.rectHeight))
+                
+                self.window.queue_draw()
+            elif self.action == ACTION_LINE:
+                self.currentAction.drawing((ex, ey), (self.x, self.y, self.rectWidth, self.rectHeight))
+                
+                self.window.queue_draw()
         else:
             if self.action == ACTION_SELECT:
                 self.setCursor(self.getPosition(event))
@@ -133,7 +254,7 @@ class DeepinScrot:
     def buttonRelease(self, widget, event):
         '''Button release.'''
         self.dragFlag = False
-        print "buttonRelease: %s" % (str(event.get_root_coords()))
+        # print "buttonRelease: %s" % (str(event.get_root_coords()))
     
         if self.action == ACTION_INIT:
             self.action = ACTION_SELECT
@@ -154,6 +275,34 @@ class DeepinScrot:
                 
             self.window.queue_draw()
             
+            self.showToolbar()
+        elif self.action == ACTION_SELECT:
+            pass
+        elif self.action == ACTION_RECTANGLE:
+            self.currentAction.endDraw(self.getEventCoord(event), (self.x, self.y, self.rectWidth, self.rectHeight))
+            self.actionList.append(self.currentAction)
+            self.currentAction = None
+            
+            self.window.queue_draw()
+        elif self.action == ACTION_ELLIPSE:
+            self.currentAction.endDraw(self.getEventCoord(event), (self.x, self.y, self.rectWidth, self.rectHeight))
+            self.actionList.append(self.currentAction)
+            self.currentAction = None
+            
+            self.window.queue_draw()
+        elif self.action == ACTION_ARROW:
+            self.currentAction.endDraw(self.getEventCoord(event), (self.x, self.y, self.rectWidth, self.rectHeight))
+            self.actionList.append(self.currentAction)
+            self.currentAction = None
+            
+            self.window.queue_draw()
+        elif self.action == ACTION_LINE:
+            self.currentAction.endDraw(self.getEventCoord(event), (self.x, self.y, self.rectWidth, self.rectHeight))
+            self.actionList.append(self.currentAction)
+            self.currentAction = None
+            
+            self.window.queue_draw()
+            
     def redraw(self, widget, event):
         '''Redraw.'''
         # Init cairo.
@@ -165,6 +314,18 @@ class DeepinScrot:
         # Draw mask.
         self.drawMask(cr)
         
+        # Draw toolbar.
+        if self.showToolbarFlag:
+            self.adjustToolbar()
+            
+        # Draw action list.
+        for action in self.actionList:
+            action.expose(cr)
+        
+        # Draw current action.
+        if self.currentAction != None:
+            self.currentAction.expose(cr)
+            
         if not (self.action == ACTION_INIT and self.dragFlag == False):
             # Draw frame.
             self.drawFrame(cr)

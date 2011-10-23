@@ -1,5 +1,8 @@
 * News in 1.0
 
+2011-10-23 Yong Wang <lazycat.manatee@gmail.com>
+	* Add new action: rectangle, ellipse, arrow, line.
+
 2011-10-21 Yong Wang <lazycat.manatee@gmail.com>
 	* Finish basic select action.
 	* Refactory code.
