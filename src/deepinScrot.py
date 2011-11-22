@@ -25,6 +25,7 @@ from utils import *
 from math import *
 from draw import *
 from constant import *
+import sys
 import gtk
 import pygtk
 pygtk.require('2.0')
@@ -34,6 +35,18 @@ class DeepinScrot:
 	
     def __init__(self):
         '''Init deepin scrot.'''
+        # Process arguments
+        self.scrotMode = SCROT_MODE_NORMAL
+        for arg in sys.argv[1:]:
+            if arg == "--fullscreen":
+                self.scrotMode = SCROT_MODE_FULLSCREEN
+            elif arg == "--window":
+                self.scrotMode = SCROT_MODE_WINDOW
+            elif arg == "--normal":
+                self.scrotMode = SCROT_MODE_NORMAL
+            else:
+                print "Ignore unknown option: ", arg
+
         # Init.
         self.action = ACTION_INIT
         self.width = self.height = 0
@@ -48,6 +61,7 @@ class DeepinScrot:
         self.toolbarOffsetX = 10
         self.toolbarOffsetY = 10
         self.toolbarHeight = 50
+        self.controlPressed = False
         
         # Init action list.
         self.currentAction = None
@@ -63,6 +77,7 @@ class DeepinScrot:
         
         # Init event handle.
         self.window.add_events(gtk.gdk.KEY_PRESS_MASK)
+        self.window.add_events(gtk.gdk.KEY_RELEASE_MASK)
         self.window.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.window.add_events(gtk.gdk.BUTTON_PRESS_MASK)
         self.window.add_events(gtk.gdk.BUTTON_RELEASE_MASK)
@@ -71,12 +86,23 @@ class DeepinScrot:
         self.window.connect("button-press-event", self.buttonPress)
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
+        self.window.connect("key-release-event", self.keyRelease)
+        self.window.connect("key-press-event", self.keyPress)
         
         # Init toolbar window.
         self.initToolbar()
         
         # Init text window.
         self.initTextWindow()
+
+        # if SCROT_MODE_FULLSCREEN
+        if self.scrotMode == SCROT_MODE_FULLSCREEN:
+            rootWindow = gtk.gdk.get_default_root_window() 
+            [self.rectWidth, self.rectHeight] = rootWindow.get_size() 
+            self.action = ACTION_SELECT
+            self.showToolbar()
+        if self.scrotMode == SCROT_MODE_WINDOW:
+            print "Window mode screenshot is not implemented yet"
         
         # Show.
         self.window.show_all()
@@ -365,6 +391,29 @@ class DeepinScrot:
             
             self.window.queue_draw()
             
+    def keyPress(self, widget, event):
+        '''process key press event'''
+        if event.keyval == gtk.keysyms.Control_L or event.keyval == gtk.keysyms.Control_R:
+            self.controlPressed = True
+
+    def keyRelease(self, widget, event):
+        '''process key release event'''
+        if event.keyval == gtk.keysyms.Control_L or event.keyval == gtk.keysyms.Control_R:
+            self.controlPressed = False
+        if event.keyval == gtk.keysyms.q:
+            self.destroy(self.window)
+        elif event.keyval == gtk.keysyms.Escape:
+            self.destroy(self.window)
+        elif event.keyval == gtk.keysyms.Return and self.showToolbarFlag == True:
+            self.saveSnapshot()
+        elif event.keyval == gtk.keysyms.s and self.showToolbarFlag == True:
+            self.saveSnapshotToFile()
+        elif event.keyval == gtk.keysyms.z and self.controlPressed == True:
+            self.undo()
+        else:
+            # do nothing
+            pass
+
     def saveSnapshotToFile(self):
         '''Save file to file.'''
         dialog = gtk.FileChooserDialog(
@@ -400,7 +449,7 @@ class DeepinScrot:
         elif response == gtk.RESPONSE_CANCEL:
             print 'Closed, no files selected'
         dialog.destroy()
-            
+
     def saveSnapshot(self, filename=None):
         '''Save snapshot.'''
         # Init cairo.
