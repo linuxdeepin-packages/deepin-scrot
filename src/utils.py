@@ -22,6 +22,7 @@
 
 import gtk
 import pygtk
+import gobject
 pygtk.require('2.0')
 
 def isCollideRect((cx, cy), (x, y, w, h)):

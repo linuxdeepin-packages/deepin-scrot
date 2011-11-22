@@ -25,6 +25,7 @@ from utils import *
 from math import *
 from draw import *
 from constant import *
+from keymap import *
 import sys
 import gtk
 import pygtk
@@ -84,7 +85,7 @@ class DeepinScrot:
         self.window.connect("button-press-event", self.buttonPress)
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
-        self.window.connect("key-release-event", self.keyRelease)
+        self.window.connect("key-press-event", self.keyPress)
         
         # Init toolbar window.
         self.initToolbar()
@@ -388,21 +389,19 @@ class DeepinScrot:
             
             self.window.queue_draw()
             
-    def keyRelease(self, widget, event):
-        '''process key release event'''
-        if event.keyval == gtk.keysyms.q:
+    def keyPress(self, widget, event):
+        '''process key press event'''
+        keyEventName = getKeyEventName(event)
+        if keyEventName == "q":
             self.destroy(self.window)
-        elif event.keyval == gtk.keysyms.Escape:
+        elif keyEventName == "Escape":
             self.destroy(self.window)
-        elif event.keyval == gtk.keysyms.Return and self.showToolbarFlag == True:
+        elif keyEventName == "Return":
             self.saveSnapshot()
-        elif event.keyval == gtk.keysyms.s and self.showToolbarFlag == True:
+        elif keyEventName == "s":
             self.saveSnapshotToFile()
-        elif event.keyval == gtk.keysyms.z and event.state & gtk.gdk.CONTROL_MASK:
+        elif keyEventName == "C-z":
             self.undo()
-        else:
-            # do nothing
-            pass
 
     def saveSnapshotToFile(self):
         '''Save file to file.'''
