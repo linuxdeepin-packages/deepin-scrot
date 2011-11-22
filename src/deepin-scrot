@@ -1,0 +1,13 @@
+#!/bin/bash
+
+REALNAME=$(which $0)
+
+## if it is a link, find the original file through recursively readlink
+while [[ -L "$REALNAME" ]]; do
+    LINKNAME=$(readlink $REALNAME)
+    [[ $LINKNAME == /* ]] \
+	&& REALNAME=$LINKNAME \
+	|| REALNAME="$(dirname $REALNAME)/$LINKNAME"
+done
+
+cd $(dirname $REALNAME) && ./deepinScrot.py
