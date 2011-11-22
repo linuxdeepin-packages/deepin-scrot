@@ -10,9 +10,9 @@ Vcs-Git: git://github.com/linuxdeepin-packages/deepin-scrot.git
 
 Package: deepin-scrot
 Architecture: any
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, gconf2
 Description: Deepin Screenshot Tool
  Provide a quite easy-to-use screenshot tool. Features:
- * Global hotkey to triggle screenshot tool
- * Take screenshot of a selected area
- * Easy to add text and line drawings onto the screenshot
+    * Global hotkey to triggle screenshot tool
+    * Take screenshot of a selected area
+    * Easy to add text and line drawings onto the screenshot
