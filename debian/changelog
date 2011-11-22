@@ -1,3 +1,14 @@
+deepin-scrot (0.2-1) oneiric; urgency=low
+
+  * Add fullscreen screenshot mode
+  * Add some keybindings 
+    * q, esc   - cancle and quit
+    * s        - save to file
+    * Enter    - copy to clipboard
+    * ctrl-z   - undo
+
+ -- Zhang Cheng <zhangcheng@linuxdeepin.com>  Tue, 22 Nov 2011 18:14:34 +0800
+
 deepin-scrot (0.1-1) oneiric; urgency=low
 
   * Initial release 
