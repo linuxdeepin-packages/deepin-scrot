@@ -5,7 +5,9 @@
 #               2011 Wang Yong
 #
 # Author:     Wang Yong <lazycat.manatee@gmail.com>
+#             Zhang Cheng <zhangcheng@linuxdeepin.com>
 # Maintainer: Wang Yong <lazycat.manatee@gmail.com>
+#             Zhang Cheng <zhangcheng@linuxdeepin.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +29,7 @@ from draw import *
 from constant import *
 from keymap import *
 import sys
+import getopt
 import gtk
 import pygtk
 pygtk.require('2.0')
@@ -37,16 +40,7 @@ class DeepinScrot:
     def __init__(self):
         '''Init deepin scrot.'''
         # Process arguments
-        self.scrotMode = SCROT_MODE_NORMAL
-        for arg in sys.argv[1:]:
-            if arg == "--fullscreen":
-                self.scrotMode = SCROT_MODE_FULLSCREEN
-            elif arg == "--window":
-                self.scrotMode = SCROT_MODE_WINDOW
-            elif arg == "--normal":
-                self.scrotMode = SCROT_MODE_NORMAL
-            else:
-                print "Ignore unknown option: ", arg
+        self.processArguments()
 
         # Init.
         self.action = ACTION_INIT
@@ -115,6 +109,24 @@ class DeepinScrot:
         self.window.show_all()
         
         gtk.main()
+
+    def processArguments(self):
+        '''Process command line arguments'''
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "nfw", ["normal", "fullscreen", "window"])
+        except getopt.GetoptError, err:
+            print str(err)
+            sys.exit(2)
+        self.scrotMode = SCROT_MODE_NORMAL 
+        for o, a in opts:
+            if o in ("-n", "--normal"):
+                self.scrotMode = SCROT_MODE_NORMAL
+            elif o in ("-f", "--fullscreen"):
+                self.scrotMode = SCROT_MODE_FULLSCREEN
+            elif o in ("-w", "--window"):
+                self.scrotMode = SCROT_MODE_WINDOW
+            else:
+                assert False, "unhandled option"
         
     def initToolbar(self):
         '''Init toolbar.'''
