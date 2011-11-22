@@ -61,7 +61,6 @@ class DeepinScrot:
         self.toolbarOffsetX = 10
         self.toolbarOffsetY = 10
         self.toolbarHeight = 50
-        self.controlPressed = False
         
         # Init action list.
         self.currentAction = None
@@ -76,7 +75,6 @@ class DeepinScrot:
         self.window.set_keep_above(True)
         
         # Init event handle.
-        self.window.add_events(gtk.gdk.KEY_PRESS_MASK)
         self.window.add_events(gtk.gdk.KEY_RELEASE_MASK)
         self.window.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.window.add_events(gtk.gdk.BUTTON_PRESS_MASK)
@@ -87,7 +85,6 @@ class DeepinScrot:
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
         self.window.connect("key-release-event", self.keyRelease)
-        self.window.connect("key-press-event", self.keyPress)
         
         # Init toolbar window.
         self.initToolbar()
@@ -391,15 +388,8 @@ class DeepinScrot:
             
             self.window.queue_draw()
             
-    def keyPress(self, widget, event):
-        '''process key press event'''
-        if event.keyval == gtk.keysyms.Control_L or event.keyval == gtk.keysyms.Control_R:
-            self.controlPressed = True
-
     def keyRelease(self, widget, event):
         '''process key release event'''
-        if event.keyval == gtk.keysyms.Control_L or event.keyval == gtk.keysyms.Control_R:
-            self.controlPressed = False
         if event.keyval == gtk.keysyms.q:
             self.destroy(self.window)
         elif event.keyval == gtk.keysyms.Escape:
@@ -408,7 +398,7 @@ class DeepinScrot:
             self.saveSnapshot()
         elif event.keyval == gtk.keysyms.s and self.showToolbarFlag == True:
             self.saveSnapshotToFile()
-        elif event.keyval == gtk.keysyms.z and self.controlPressed == True:
+        elif event.keyval == gtk.keysyms.z and event.state & gtk.gdk.CONTROL_MASK:
             self.undo()
         else:
             # do nothing
@@ -417,11 +407,11 @@ class DeepinScrot:
     def saveSnapshotToFile(self):
         '''Save file to file.'''
         dialog = gtk.FileChooserDialog(
-            "Open..",
+            "Save..",
             None,
-            gtk.FILE_CHOOSER_ACTION_OPEN,
+            gtk.FILE_CHOOSER_ACTION_SAVE,
             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-             gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+             gtk.STOCK_SAVE, gtk.RESPONSE_OK))
         dialog.set_default_response(gtk.RESPONSE_OK)
         
         filter = gtk.FileFilter()
