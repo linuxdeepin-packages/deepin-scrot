@@ -62,6 +62,9 @@ class DeepinScrot:
         self.toolbarOffsetX = 10
         self.toolbarOffsetY = 10
         self.toolbarHeight = 50
+
+        # keybinding map
+        self.keyBindings = {}
         
         # Init action list.
         self.currentAction = None
@@ -86,6 +89,12 @@ class DeepinScrot:
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
         self.window.connect("key-press-event", self.keyPress)
+
+        self.registerKeyBinding("q", lambda : self.destroy(self.window))
+        self.registerKeyBinding("Escape", lambda : self.destroy(self.window))
+        self.registerKeyBinding("s", self.saveSnapshotToFile)
+        self.registerKeyBinding("Return", self.saveSnapshot)
+        self.registerKeyBinding("C-z", self.undo)
         
         # Init toolbar window.
         self.initToolbar()
@@ -388,20 +397,21 @@ class DeepinScrot:
             self.currentAction = None
             
             self.window.queue_draw()
+
+    def registerKeyBinding(self, keyEventName, callback):
+        '''Register a keybinding'''
+        self.keyBindings[keyEventName] = callback
+
+    def unregisterKeyBinding(self, keyEventName):
+        '''Unregister a keybinding'''
+        if self.keyBindings.has_key(keyEventName):
+            del self.keyBindings[keyEventName]
             
     def keyPress(self, widget, event):
         '''process key press event'''
         keyEventName = getKeyEventName(event)
-        if keyEventName == "q":
-            self.destroy(self.window)
-        elif keyEventName == "Escape":
-            self.destroy(self.window)
-        elif keyEventName == "Return":
-            self.saveSnapshot()
-        elif keyEventName == "s":
-            self.saveSnapshotToFile()
-        elif keyEventName == "C-z":
-            self.undo()
+        if self.keyBindings.has_key(keyEventName):
+            self.keyBindings[keyEventName]()
 
     def saveSnapshotToFile(self):
         '''Save file to file.'''
