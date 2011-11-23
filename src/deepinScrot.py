@@ -5,7 +5,9 @@
 #               2011 Wang Yong
 #
 # Author:     Wang Yong <lazycat.manatee@gmail.com>
+#             Zhang Cheng <zhangcheng@linuxdeepin.com>
 # Maintainer: Wang Yong <lazycat.manatee@gmail.com>
+#             Zhang Cheng <zhangcheng@linuxdeepin.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +29,7 @@ from draw import *
 from constant import *
 from keymap import *
 import sys
+import getopt
 import gtk
 import pygtk
 pygtk.require('2.0')
@@ -37,16 +40,7 @@ class DeepinScrot:
     def __init__(self):
         '''Init deepin scrot.'''
         # Process arguments
-        self.scrotMode = SCROT_MODE_NORMAL
-        for arg in sys.argv[1:]:
-            if arg == "--fullscreen":
-                self.scrotMode = SCROT_MODE_FULLSCREEN
-            elif arg == "--window":
-                self.scrotMode = SCROT_MODE_WINDOW
-            elif arg == "--normal":
-                self.scrotMode = SCROT_MODE_NORMAL
-            else:
-                print "Ignore unknown option: ", arg
+        self.processArguments()
 
         # Init.
         self.action = ACTION_INIT
@@ -62,7 +56,9 @@ class DeepinScrot:
         self.toolbarOffsetX = 10
         self.toolbarOffsetY = 10
         self.toolbarHeight = 50
-        self.controlPressed = False
+
+        # keybinding map
+        self.keyBindings = {}
         
         # Init action list.
         self.currentAction = None
@@ -77,7 +73,6 @@ class DeepinScrot:
         self.window.set_keep_above(True)
         
         # Init event handle.
-        self.window.add_events(gtk.gdk.KEY_PRESS_MASK)
         self.window.add_events(gtk.gdk.KEY_RELEASE_MASK)
         self.window.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.window.add_events(gtk.gdk.BUTTON_PRESS_MASK)
@@ -88,6 +83,12 @@ class DeepinScrot:
         self.window.connect("button-release-event", self.buttonRelease)
         self.window.connect("motion-notify-event", self.motionNotify)
         self.window.connect("key-press-event", self.keyPress)
+
+        self.registerKeyBinding("q", lambda : self.destroy(self.window))
+        self.registerKeyBinding("Escape", lambda : self.destroy(self.window))
+        self.registerKeyBinding("s", self.saveSnapshotToFile)
+        self.registerKeyBinding("Return", self.saveSnapshot)
+        self.registerKeyBinding("C-z", self.undo)
         
         # Init toolbar window.
         self.initToolbar()
@@ -108,6 +109,24 @@ class DeepinScrot:
         self.window.show_all()
         
         gtk.main()
+
+    def processArguments(self):
+        '''Process command line arguments'''
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "nfw", ["normal", "fullscreen", "window"])
+        except getopt.GetoptError, err:
+            print str(err)
+            sys.exit(2)
+        self.scrotMode = SCROT_MODE_NORMAL 
+        for o, a in opts:
+            if o in ("-n", "--normal"):
+                self.scrotMode = SCROT_MODE_NORMAL
+            elif o in ("-f", "--fullscreen"):
+                self.scrotMode = SCROT_MODE_FULLSCREEN
+            elif o in ("-w", "--window"):
+                self.scrotMode = SCROT_MODE_WINDOW
+            else:
+                assert False, "unhandled option"
         
     def initToolbar(self):
         '''Init toolbar.'''
@@ -390,20 +409,21 @@ class DeepinScrot:
             self.currentAction = None
             
             self.window.queue_draw()
+
+    def registerKeyBinding(self, keyEventName, callback):
+        '''Register a keybinding'''
+        self.keyBindings[keyEventName] = callback
+
+    def unregisterKeyBinding(self, keyEventName):
+        '''Unregister a keybinding'''
+        if self.keyBindings.has_key(keyEventName):
+            del self.keyBindings[keyEventName]
             
     def keyPress(self, widget, event):
         '''process key press event'''
         keyEventName = getKeyEventName(event)
-        if keyEventName == "q":
-            self.destroy(self.window)
-        elif keyEventName == "Escape":
-            self.destroy(self.window)
-        elif keyEventName == "Return":
-            self.saveSnapshot()
-        elif keyEventName == "s":
-            self.saveSnapshotToFile()
-        elif keyEventName == "C-z":
-            self.undo()
+        if self.keyBindings.has_key(keyEventName):
+            self.keyBindings[keyEventName]()
 
     def saveSnapshotToFile(self):
         '''Save file to file.'''
