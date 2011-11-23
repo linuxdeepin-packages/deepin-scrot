@@ -38,3 +38,8 @@ def setCursor(widget, cursorType):
     widget.window.set_cursor(gtk.gdk.Cursor(cursorType))
     
     return False
+
+def getScreenSize():
+    '''Get screen size.'''
+    return gtk.gdk.get_default_root_window().get_size()
+

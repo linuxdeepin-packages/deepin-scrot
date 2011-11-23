@@ -5,6 +5,7 @@
 	* Add keymap.py, use `getKeyEventName` to handle key event in `key-press-event' signal.
 	* Use option gtk.FILE_CHOOSER_ACTION_SAVE fix dialog path problem.
 	* Change gtk.STOCK_OPEN to gtk.STOCK_SAVE.
+	* Add comment and new function `getScreenSize`.
 
 2011-10-23 Yong Wang <lazycat.manatee@gmail.com>
 	* Add new action: rectangle, ellipse, arrow, line.

@@ -84,6 +84,7 @@ class DeepinScrot:
         self.window.connect("motion-notify-event", self.motionNotify)
         self.window.connect("key-press-event", self.keyPress)
 
+        # Register key binding.
         self.registerKeyBinding("q", lambda : self.destroy(self.window))
         self.registerKeyBinding("Escape", lambda : self.destroy(self.window))
         self.registerKeyBinding("s", self.saveSnapshotToFile)
@@ -98,8 +99,7 @@ class DeepinScrot:
 
         # if SCROT_MODE_FULLSCREEN
         if self.scrotMode == SCROT_MODE_FULLSCREEN:
-            rootWindow = gtk.gdk.get_default_root_window() 
-            [self.rectWidth, self.rectHeight] = rootWindow.get_size() 
+            [self.rectWidth, self.rectHeight] = getScreenSize()
             self.action = ACTION_SELECT
             self.showToolbar()
         if self.scrotMode == SCROT_MODE_WINDOW:
