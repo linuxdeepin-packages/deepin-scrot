@@ -22,6 +22,7 @@
 
 from math import *
 from theme import *
+import cairo
 import gtk
 import pygtk
 pygtk.require('2.0')
@@ -57,49 +58,25 @@ def colorRGBToCairo(color):
     """ 
     return (color[0] / 255.0, color[1] / 255.0, color[2] / 255.0) 
 
-def drawSimpleButton(widget, img):
+def drawSimpleButton(widget, img, index, getIndex):
     '''Draw simple button.'''
-    simpleButtonSetBackground(
-        widget,
-        False, False,
-        appTheme.getDynamicPixbuf(img)
-        )
+    pixbuf = appTheme.getDynamicPixbuf(img + ".png").getPixbuf()
+    widget.set_size_request(pixbuf.get_width(), pixbuf.get_height())
+    
+    # simpleButtonSetBackground(widget, img)
+    widget.connect("expose-event", lambda w, e: simpleButtonOnExpose(w, e, img, index, getIndex))
 
-def simpleButtonSetBackground(widget, scaleX, scaleY, dPixbuf):
-    '''Set event box's background.'''
-    if scaleX:
-        requestWidth = -1
-    else:
-        requestWidth = dPixbuf.getPixbuf().get_width()
-        
-    if scaleY:
-        requestHeight = -1
-    else:
-        requestHeight = dPixbuf.getPixbuf().get_height()
-    
-    widget.set_size_request(requestWidth, requestHeight)
-    
-    widget.connect("expose-event", lambda w, e: simpleButtonOnExpose(
-            w, e,
-            scaleX, scaleY,
-            dPixbuf))
-        
-def simpleButtonOnExpose(widget, event, 
-                         scaleX, scaleY,
-                         dPixbuf):
+def simpleButtonOnExpose(widget, event, img, index, getIndex):
     '''Expose function to replace event box's image.'''
-    image = dPixbuf.getPixbuf()
-    if scaleX:
-        imageWidth = widget.allocation.width
-    else:
-        imageWidth = image.get_width()
-        
-    if scaleY:
-        imageHeight = widget.allocation.height
-    else:
-        imageHeight = image.get_height()
-    
-    pixbuf = image.scale_simple(imageWidth, imageHeight, gtk.gdk.INTERP_BILINEAR)
+    if widget.state == gtk.STATE_NORMAL:
+        if getIndex() == index:
+            pixbuf = appTheme.getDynamicPixbuf(img + "_press.png").getPixbuf()
+        else:
+            pixbuf = appTheme.getDynamicPixbuf(img + ".png").getPixbuf()
+    elif widget.state == gtk.STATE_PRELIGHT:
+        pixbuf = appTheme.getDynamicPixbuf(img + "_hover.png").getPixbuf()
+    elif widget.state == gtk.STATE_ACTIVE:
+        pixbuf = appTheme.getDynamicPixbuf(img + "_press.png").getPixbuf()
     
     cr = widget.window.cairo_create()
     drawPixbuf(cr, pixbuf, 
@@ -121,6 +98,7 @@ def drawEllipse(cr, ex, ey, ew, eh, color, size):
     cr.set_source_rgb(*colorHexToCairo(color))
     cr.set_line_width(size)
     cr.stroke()
+    
 
 def drawArrow(cr, (sx, sy), (ex, ey), color, size):
     '''Draw arrow.'''
@@ -161,3 +139,58 @@ def drawArrow(cr, (sx, sy), (ex, ey), color, size):
     cr.line_to(x1, y1)
     cr.line_to(x2, y2)
     cr.fill()
+
+def updateShape(widget, allocation, radius):
+    '''Update shape.'''
+    if allocation.width > 0 and allocation.height > 0:
+        # Init.
+        w, h = allocation.width, allocation.height
+        bitmap = gtk.gdk.Pixmap(None, w, h, 1)
+        cr = bitmap.cairo_create()
+        
+        # Clear the bitmap
+        cr.set_source_rgb(0.0, 0.0, 0.0)
+        cr.set_operator(cairo.OPERATOR_CLEAR)
+        cr.paint()
+        
+        # Draw our shape into the bitmap using cairo
+        cr.set_source_rgb(1.0, 1.0, 1.0)
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        drawRoundRectangle(cr, 0, 0, w, h, radius)
+        cr.fill()
+        
+        widget.shape_combine_mask(bitmap, 0, 0)
+
+def drawRoundRectangle(cr, x, y, width, height, r):
+    '''Draw round rectangle.'''
+    cr.move_to(x + r, y)
+    cr.line_to(x + width - r, y)
+
+    cr.move_to(x + width, y + r)
+    cr.line_to(x + width, y + height - r)
+
+    cr.move_to(x + width - r, y + height)
+    cr.line_to(x + r, y + height)
+
+    cr.move_to(x, y + height - r)
+    cr.line_to(x, y + r)
+
+    cr.arc(x + r, y + r, r, pi, 3 * pi / 2.0)
+    cr.arc(x + width - r, y + r, r, 3 * pi / 2, 2 * pi)
+    cr.arc(x + width - r, y + height - r, r, 0, pi / 2)
+    cr.arc(x + r, y + height - r, r, pi / 2, pi)
+
+def exposeBackground(widget, event, dPixbuf):
+    '''Expose background.'''
+    cr = widget.window.cairo_create()
+    rect = widget.allocation
+
+    drawPixbuf(cr, dPixbuf.getPixbuf().scale_simple(rect.width, rect.height, gtk.gdk.INTERP_BILINEAR), rect.x, rect.y)
+    
+    if widget.get_child() != None:
+        widget.propagate_expose(widget.get_child(), event)
+
+    return True
+    
+    
+    

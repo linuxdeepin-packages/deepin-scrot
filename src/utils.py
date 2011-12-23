@@ -23,6 +23,7 @@
 import gtk
 import pygtk
 import gobject
+
 pygtk.require('2.0')
 
 def isCollideRect((cx, cy), (x, y, w, h)):
@@ -43,3 +44,6 @@ def getScreenSize():
     '''Get screen size.'''
     return gtk.gdk.get_default_root_window().get_size()
 
+def isDoubleClick(event):
+    '''Whether an event is double click?'''
+    return event.button == 1 and event.type == gtk.gdk._2BUTTON_PRESS
