@@ -1,3 +1,9 @@
+deepin-scrot (0.9) oneiric; urgency=low
+
+  * RC release
+
+ -- Zhang Cheng <zhangcheng@linuxdeepin.com>  Fri, 23 Dec 2011 20:31:11 +0800
+
 deepin-scrot (0.2-1) oneiric; urgency=low
 
   * Add fullscreen screenshot mode

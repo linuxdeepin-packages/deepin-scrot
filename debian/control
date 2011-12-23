@@ -9,8 +9,8 @@ Vcs-Git: git://github.com/linuxdeepin-packages/deepin-scrot.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/deepin-scrot.git;a=summary
 
 Package: deepin-scrot
-Architecture: any
-Depends: ${misc:Depends}, ${python:Depends}, gconf2
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, gconf2, python-xlib
 Description: Deepin Screenshot Tool
  Provide a quite easy-to-use screenshot tool. Features:
     * Global hotkey to triggle screenshot tool
