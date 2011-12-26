@@ -69,7 +69,7 @@ def drawSimpleButton(widget, img, index, getIndex):
 def simpleButtonOnExpose(widget, event, img, index, getIndex):
     '''Expose function to replace event box's image.'''
     if widget.state == gtk.STATE_NORMAL:
-        if getIndex() == index and index != 6:
+        if getIndex() == index:
             pixbuf = appTheme.getDynamicPixbuf(img + "_press.png").getPixbuf()
         else:
             pixbuf = appTheme.getDynamicPixbuf(img + ".png").getPixbuf()
@@ -191,35 +191,6 @@ def exposeBackground(widget, event, dPixbuf):
         widget.propagate_expose(widget.get_child(), event)
 
     return True
-
-def drawRoundTextRectangle(cr, X, Y, Width, Height, Text, alpha=0.8):
-    ''' draw Round Text Rectangle''' 
-    x =  X + Width / 2 - 100
-    y = Y + Height / 2 - 14
-    width = 200
-    height = 28
-    r = height / 4.0
-    cr.set_source_rgba(0.14, 0.13, 0.15, alpha)
-    cr.move_to(x+r, y)
-    cr.line_to(x+width-r,y)
-        
-    cr.move_to(x+width, y+r)
-    cr.line_to(x+width, y+height - r)
-        
-    cr.move_to(x+width-r,y+height)
-    cr.line_to(x+r, y+height)
-        
-    cr.move_to(x, y+height-r)
-    cr.line_to(x, y+r)
-    cr.arc(x+r, y+r, r, pi, 3*pi / 2)
-    cr.arc(x+width-r,y+r,r, 3*pi / 2, 2*pi)
-    cr.arc(x+width-r, y+height-r, r, 2*pi, pi / 2)
-    cr.arc(x+r, y+height-r, r, pi / 2, pi)    
-    cr.fill()
-        
-    cr.set_source_rgb(*colorHexToCairo('#FFFFFF'))
-    cr.set_font_size(14.0)
-    cr.move_to(x + width / 12.0, y + height / 1.5)
-    cr.show_text(Text)
+    
     
     

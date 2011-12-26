@@ -29,7 +29,6 @@ disp = Xlib.display.Display()
 rootWindow = disp.screen().root
 WM_HINTS = disp.intern_atom("WM_HINTS", True)
 WM_STATE = disp.intern_atom("WM_STATE", True)
-WM_DESKTOP  = disp.intern_atom("_NET_WM_DESKTOP", True)
 
  
 def findWindowByProperty(xlibWindow, atom=WM_STATE):
@@ -59,24 +58,7 @@ def getClientWindow(target):
     return target
 
 
-def filterWindow():
-    ''' without other window'''
-    windowList = []
-
-    
-    for xlibWindow in enumXlibWindow():
-        if xlibWindow.get_property(WM_DESKTOP, WM_HINTS, 0, 0):
-            windowList.append(xlibWindow)
-        else:
-             if findWindowByProperty(xlibWindow, WM_DESKTOP):
-                 windowList.append(xlibWindow)
-    
-
-    return windowList
-             
-    
-
-def getXlibPointerWindow():
+def getXlibFocusWindow():
     ''' above window '''
     return rootWindow.query_pointer().child
 
@@ -105,9 +87,9 @@ def getWindowCoord(xlibWindow):
         height = xlibWindow.get_geometry().height
     return (x, y, width, height)
 
-def getPointerWindowCoord():
+def getFocusWindowCoord():
     ''' get current Focus Window's Coord '''
-    return getWindowCoord(getXlibPointerWindow())
+    return getWindowCoord(getXlibFocusWindow())
 
     
 
@@ -134,13 +116,6 @@ def getUsertimeWindow():
     
     return sorted(usertimeWindow.iteritems(), key=lambda k: k[0], reverse=True)
 
-def getFocusWindowCoord():
-    ''' '''
-    windowDict = dict(getUsertimeWindow())
-    focusWindow = windowDict[max(windowDict.keys())]
-    return getWindowCoord(focusWindow)
-    
-    
 
 def enumGtkWindow():
     '''  enumerate gtkWindow from xlibWindow '''
@@ -177,13 +152,13 @@ def convertCoord(x, y, width, height, xWidth, yHeight):
         return (x, y, width - (xWidth - screenWidth), height)
     
     if x < 0 and y < 0:
-        return (0, 0, xWidth, yHeight)
+        return (0, 27, xWidth, yHeight - 27)
     
     if x > 0 and x < xWidth < screenWidth and y < 0:
-        return (x, 0, width, yHeight)
+        return (x, 27, width, yHeight - 27)
     
     if x > 0 and xWidth > screenWidth and y < 0:
-        return (x, 0, width - (xWidth - screenWidth), yHeight) 
+        return (x, 27, width - (xWidth - screenWidth), yHeight - 27) 
         
     
     
@@ -196,14 +171,17 @@ def getScrotWindowInfo():
     ''' return (x, y, width, height) '''
     coordInfo = namedtuple('coord', 'x y width height')
     scrotWindowInfo = []
+    scrotWindowInfo.append(coordInfo(0, 0, screenWidth, screenHeight))
+    scrotWindowInfo.append(coordInfo(0, 27, screenWidth-2, screenHeight - 29))
     
-    #(cx, cy, cWidth, cHeight) = getPointerWindowCoord()
+    (cx, cy, cWidth, cHeight) = getFocusWindowCoord()
     
-    for eachWindow in filterWindow():
+    for eachWindow in enumXlibWindow():
         (x, y, width, height) = getWindowCoord(eachWindow)
-        if x == y == 0 and (width,height) == (screenWidth, screenHeight):
-            continue
-        scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height, x+width, y+height)))
+        if x <= cx and y <= cy and width >= cWidth and height >= cHeight:
+            scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height, x+width, y+height)))
+        elif x + width < cx or  y + height < cy or x > cx + cWidth or y > cy + cHeight:
+            scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height, x+width, y+height)))
     
 
     return scrotWindowInfo
@@ -213,7 +191,6 @@ def getScrotWindowInfo():
 
 if __name__ == '__main__':
     print getScrotWindowInfo()
-    print getFocusWindowCoord()
     
 
 
