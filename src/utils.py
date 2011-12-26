@@ -23,6 +23,7 @@
 import gtk
 import pygtk
 import gobject
+import pangocairo
 
 pygtk.require('2.0')
 
@@ -47,3 +48,20 @@ def getScreenSize():
 def isDoubleClick(event):
     '''Whether an event is double click?'''
     return event.button == 1 and event.type == gtk.gdk._2BUTTON_PRESS
+
+def getFontFamilies():
+    '''Get all font families in system.'''
+    fontmap = pangocairo.cairo_font_map_get_default()
+    return map (lambda f: f.get_name(), fontmap.list_families())
+
+def setHelpTooltip(widget, helpText):
+    '''Set help tooltip.'''
+    widget.connect("enter-notify-event", lambda w, e: showHelpTooltip(w, helpText))
+
+def showHelpTooltip(widget, helpText):
+    '''Create help tooltip.'''
+    widget.set_has_tooltip(True)
+    widget.set_tooltip_text(helpText)
+    widget.trigger_tooltip_query()
+    
+    return False

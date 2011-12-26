@@ -95,9 +95,9 @@ def getWindowCoord(xlibWindow):
     
     if xlibWindow != clientWindow:
         x = xlibWindow.get_geometry().x + clientWindow.get_geometry().x
-        y = xlibWindow.get_geometry().y + clientWindow.get_geometry().y - 27
+        y = xlibWindow.get_geometry().y + clientWindow.get_geometry().y - 26
         width =  clientWindow.get_geometry().width
-        height = clientWindow.get_geometry().height + 27
+        height = clientWindow.get_geometry().height + 26
     else:
         x = xlibWindow.get_geometry().x
         y = xlibWindow.get_geometry().y

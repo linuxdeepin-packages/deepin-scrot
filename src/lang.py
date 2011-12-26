@@ -5,7 +5,9 @@
 #               2011 Wang Yong
 #
 # Author:     Wang Yong <lazycat.manatee@gmail.com>
-# Maintainer: Wang Yong <lazycat.manatee@gmail.com>
+#             hou  shaohui <houshaohui@linuxdeepin.com>
+#
+# Maintainer: hou shaohui <houshaohui@linuxdeepin.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,31 +22,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ACTION_INIT = 0
-ACTION_SELECT = 1
-ACTION_RECTANGLE = 2
-ACTION_ELLIPSE = 3
-ACTION_ARROW = 4
-ACTION_LINE = 5
-ACTION_PIXELIZE = 6
-ACTION_TEXT = 7
-ACTION_STEP = 8
-ACTION_WINDOW = 9
+import gettext
+import locale
 
-DRAG_INSIDE = 0
-DRAG_OUTSIDE = 1
-DRAG_TOP_LEFT_CORNER = 2
-DRAG_TOP_RIGHT_CORNER = 3
-DRAG_BOTTOM_LEFT_CORNER = 4
-DRAG_BOTTOM_RIGHT_CORNER = 5
-DRAG_TOP_SIDE = 6
-DRAG_BOTTOM_SIDE = 7
-DRAG_LEFT_SIDE = 8
-DRAG_RIGHT_SIDE = 9
+DEFAULT_LANG = None
+#DEFAULT_LANG = "default"
+#DEFAULT_LANG = "zh_CN"
+#DEFAULT_LANG = "zh_TW"
 
-SCROT_MODE_NORMAL = 0
-SCROT_MODE_FULLSCREEN = 1
-SCROT_MODE_WINDOW = 2
+if DEFAULT_LANG == None:
+    (lang, _) = locale.getdefaultlocale()
+    if lang in ["zh_CN", "zh_TW"]:
+        __ = gettext.translation('deepin-scrot', '../locale', languages=[lang]).gettext
+    else:
+        __ = gettext.translation('deepin-scrot', '../locale', languages=[default]).gettext
 
-DEFAULT_FILENAME = "DeepinScrot"
-DEFAULT_FONT = "文泉驿微米黑"
+else:
+    __ = gettext.translation('deepin-scrot', '../locale', languages=[DEFAULT_LANG]).gettext
+
+

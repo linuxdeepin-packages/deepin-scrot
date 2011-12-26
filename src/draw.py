@@ -22,9 +22,14 @@
 
 from math import *
 from theme import *
+from utils import *
+import sys
+from constant import DEFAULT_FONT
 import cairo
 import gtk
 import pygtk
+import glib
+
 pygtk.require('2.0')
 
 def drawPixbuf(cr, pixbuf, x=0, y=0):
@@ -58,13 +63,14 @@ def colorRGBToCairo(color):
     """ 
     return (color[0] / 255.0, color[1] / 255.0, color[2] / 255.0) 
 
-def drawSimpleButton(widget, img, index, getIndex):
+def drawSimpleButton(widget, img, index, getIndex, helpText):
     '''Draw simple button.'''
     pixbuf = appTheme.getDynamicPixbuf(img + ".png").getPixbuf()
     widget.set_size_request(pixbuf.get_width(), pixbuf.get_height())
     
     # simpleButtonSetBackground(widget, img)
     widget.connect("expose-event", lambda w, e: simpleButtonOnExpose(w, e, img, index, getIndex))
+    setHelpTooltip(widget, helpText)
 
 def simpleButtonOnExpose(widget, event, img, index, getIndex):
     '''Expose function to replace event box's image.'''
@@ -217,9 +223,71 @@ def drawRoundTextRectangle(cr, X, Y, Width, Height, Text, alpha=0.8):
     cr.arc(x+r, y+height-r, r, pi / 2, pi)    
     cr.fill()
         
-    cr.set_source_rgb(*colorHexToCairo('#FFFFFF'))
-    cr.set_font_size(14.0)
-    cr.move_to(x + width / 12.0, y + height / 1.5)
-    cr.show_text(Text)
+    drawFont(cr, Text, 14.0, "#FFFF00", x + width / 12.0, y + height / 1.5)
+
     
+
+def drawFont(cr, content, fontSize, fontColor, x, y):
+    '''Draw font.'''
+    if DEFAULT_FONT in getFontFamilies():
+        cr.select_font_face(DEFAULT_FONT,
+                            cairo.FONT_SLANT_NORMAL, 
+                            cairo.FONT_WEIGHT_NORMAL)
+    cr.set_source_rgb(*colorHexToCairo(fontColor))
+    cr.set_font_size(fontSize)
+    cr.move_to(x, y)
+    cr.show_text(content)
+
+
+class tipWindow():
+    ''' tip window'''
+    def __init__(self, content):
+        ''' Init tip Window'''
+        screenWidth, screenHeight = gtk.gdk.get_default_root_window().get_size()
+        self.delta = 0.01
+        self.alpha = 1
+        self.content = content
+        self.tipWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.tipWindow.set_keep_above(True)
+        self.tipWindow.set_size_request(260, 30)
+        self.tipWindow.set_app_paintable(True)
+        self.tipWindow.set_decorated(False)
+        self.tipWindow.set_opacity(1)
+        self.tipWindow.move(screenWidth - 280 , 50)
+        self.tipWindow.connect('expose-event', self.tipExpose)
+        self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 8))
+
+        glib.timeout_add(40, lambda : self.timeoutHandler(self.tipWindow))
+        self.tipWindow.show()
+        
+        gtk.main()
     
+    def tipExpose(self, widget, event, data=None):
+        self.alpha -= self.delta
+        widget.set_opacity(self.alpha)
+        
+        cr = widget.window.cairo_create()
+        width, height = widget.window.get_size()
+        cr.set_source_rgb(0.14, 0.13, 0.15)
+        drawRoundRectangle(cr, 0, 0, width, height, 5)
+        cr.fill()
+        drawFont(cr, self.content, 18, "#FFFF00", width / 15, 22)
+    
+    def getAlpha(self):
+        return self.alpha
+        
+    def timeoutHandler(self, widget):
+        if self.getAlpha() <= 0:
+            gtk.main_quit()
+            return False
+        widget.queue_draw()
+        return True
+    
+        
+        
+             
+        
+if __name__ == '__main__':
+    if len(sys.argv) >= 2:
+        tipWindow(sys.argv[1])
+        

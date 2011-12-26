@@ -32,12 +32,15 @@ from draw import *
 from constant import *
 from keymap import *
 from window import *
+from lang import __
 import sys
 import time
 import getopt
 import gtk
 import pygtk
 import os
+import glib
+import subprocess
 
 pygtk.require('2.0')
 
@@ -145,31 +148,31 @@ class MainScrot:
         self.toolAlign.add(self.toolBox)
         self.toolbarWindow.add(self.toolAlign)
         
-        self.actionRectangleButton = self.createActionButton("rect", 0)
+        self.actionRectangleButton = self.createActionButton("rect", 0, __("Tip draw rectangle"))
         self.actionRectangleButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_RECTANGLE))
         self.actionRectangleButton.connect("button-press-event", lambda w, e: self.setIconIndex(0))
-        self.actionEllipseButton = self.createActionButton("ellipse", 1)
+        self.actionEllipseButton = self.createActionButton("ellipse", 1, __("Tip draw ellipse"))
         self.actionEllipseButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_ELLIPSE))
         self.actionEllipseButton.connect("button-press-event", lambda w, e: self.setIconIndex(1))
-        self.actionArrowButton = self.createActionButton("arrow", 2)
+        self.actionArrowButton = self.createActionButton("arrow", 2, __("Tip draw arrow"))
         self.actionArrowButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_ARROW))
         self.actionArrowButton.connect("button-press-event", lambda w, e: self.setIconIndex(2))
-        self.actionLineButton = self.createActionButton("line", 3)
+        self.actionLineButton = self.createActionButton("line", 3, __("Tip draw line"))
         self.actionLineButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_LINE))
         self.actionLineButton.connect("button-press-event", lambda w, e: self.setIconIndex(3))
-#        self.actionTextButton = self.createActionButton("text", 4)
+#        self.actionTextButton = self.createActionButton("text", 4, __("Tip draw text"))
 #        self.actionTextButton.connect("button-press-event", lambda w, e: self.setActionType(ACTION_TEXT))
 #        self.actionTextButton.connect("button-press-event", lambda w, e: self.setIconIndex(4))
-        self.actionUndoButton = self.createActionButton("undo", 5)
+        self.actionUndoButton = self.createActionButton("undo", 5, __("Tip undo"))
         self.actionUndoButton.connect("button-press-event", lambda w, e: self.undo())
         self.actionUndoButton.connect("button-press-event", lambda w, e: self.setIconIndex(5))
-        self.actionSaveButton = self.createActionButton("save", 6)
+        self.actionSaveButton = self.createActionButton("save", 6, __("Tip save"))
         self.actionSaveButton.connect("button-press-event", lambda w, e: self.saveSnapshotToFile())
         self.actionSaveButton.connect("button-press-event", lambda w, e: self.setIconIndex(6))
-        self.actionCancelButton = self.createActionButton("cancel", 7)
+        self.actionCancelButton = self.createActionButton("cancel", 7, __("Tip cancel"))
         self.actionCancelButton.connect("button-press-event", lambda w, e: self.destroy(self.window))
         self.actionCancelButton.connect("button-press-event", lambda w, e: self.setIconIndex(7))
-        self.actionFinishButton = self.createActionButton("finish", 8)
+        self.actionFinishButton = self.createActionButton("finish", 8, __("Tip finish"))
         self.actionFinishButton.connect("button-press-event", lambda w, e: self.saveSnapshot())
         self.actionFinishButton.connect("button-press-event", lambda w, e: self.setIconIndex(8))
       
@@ -234,12 +237,12 @@ class MainScrot:
         self.action = aType    
         self.currentAction = None
         
-    def createActionButton(self, iconName, index):
+    def createActionButton(self, iconName, index, helpText):
         '''Create action button.'''
         # actionButton = gtk.EventBox()
         actionButton = gtk.Button()
         # actionButton.set_visible_window(False)
-        drawSimpleButton(actionButton, iconName, index, self.getIconIndex)
+        drawSimpleButton(actionButton, iconName, index, self.getIconIndex, helpText)
         self.toolBox.pack_start(actionButton)
         
         return actionButton
@@ -478,7 +481,7 @@ class MainScrot:
         (ex, ey) = self.getEventCoord(event)
         
         if isDoubleClick(event) and self.action == ACTION_SELECT and self.x < ex < self.x + self.rectWidth and self.y < ey < self.y + self.rectHeight:
-            self.saveSnapshotToFile()
+            self.saveSnapshot()
             self.buttonRelease(widget, event)
          
 
@@ -501,18 +504,22 @@ class MainScrot:
         '''Save file to file.'''
         dialog = gtk.FileChooserDialog(
             "Save..",
-            None,
+            self.window,
             gtk.FILE_CHOOSER_ACTION_SAVE,
             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
              gtk.STOCK_SAVE, gtk.RESPONSE_OK))
         
-        
+        pngFilter = gtk.FileFilter()
+        pngFilter.set_name("png")
+        pngFilter.add_pattern("*.png")
+        dialog.add_filter(pngFilter)
         dialog.set_default_response(gtk.RESPONSE_OK)
-        dialog.set_transient_for(self.window)
+        #dialog.set_transient_for(self.window)
         dialog.set_position(gtk.WIN_POS_MOUSE)
+        
     
         dialog.set_current_folder(os.environ['HOME'])
-        dialog.set_current_name(DEFAULT_FILENAME + "-" + time.strftime("%M%S", time.localtime()))
+        dialog.set_current_name(DEFAULT_FILENAME + "-" + time.strftime("%M%S.png", time.localtime()))
         
         self.hideToolbar()
         response = dialog.run()
@@ -554,12 +561,22 @@ class MainScrot:
             clipboard = gtk.clipboard_get()
             clipboard.set_image(pixbuf)
             clipboard.store()
+            tipContent = __("Tip save to clipboard")
         else:
             # Otherwise save to local file.
-            pixbuf.save(filename + ".png", "png")
+            if ".png" not in (filename):
+                filename = filename + ".png"
+            pixbuf.save(filename, "png")
+            tipContent = __("Tip save to file")
+            
+        
         
         # Exit
+        self.window.window.set_cursor(None)
         self.destroy(self.window)
+        cmd = ('python','draw.py', tipContent)
+        subprocess.Popen(cmd)
+
         
     def redraw(self, widget, event):
         '''Redraw.'''
@@ -586,7 +603,7 @@ class MainScrot:
         
         if self.windowFlag and self.rectWidth:
             self.drawWindowRectangle(cr)
-            drawRoundTextRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight, '拖动可自由选区 %d x %d' % (self.rectWidth, self.rectHeight))
+            drawRoundTextRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight, '%s %d x %d' % (__("Tip Drag"),self.rectWidth, self.rectHeight))
         
         elif self.rectWidth:
             
@@ -816,16 +833,13 @@ class MainScrot:
         self.window.queue_draw()
     
 
+
         
-    
+        
     def drawWindowRectangle(self, cr):
         '''Draw frame.'''
-        #cr.set_source_rgb(*colorHexToCairo(self.frameColor))
-        #cr.set_source_rgb(0.1, 0.42, 0.66)
         cr.set_line_width(4)
         cr.rectangle(self.x, self.y, self.rectWidth, self.rectHeight)
-        #cr.set_source_rgba(0.1, 0.42, 0.66, 0.5)
-        #cr.fill_preserve()
         cr.set_source_rgb(*colorHexToCairo(self.frameColor))
         cr.stroke()
 
