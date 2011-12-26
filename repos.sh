@@ -8,7 +8,7 @@ case "$1" in
         git pull origin master
         ;;
     "push" )
-        git push git@github.com:manateelazycat/deepin-scrot.git
+        git push git@github.com:$2/deepin-scrot.git
         ;;
     "revert" )
         git checkout -- .
