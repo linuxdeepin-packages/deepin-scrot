@@ -53,7 +53,7 @@ class MainScrot:
         self.x = self.y = self.rectWidth = self.rectHeight = 0
         self.iconIndex = -1
         
-        self.frameColor = "#FFFF0"         
+        self.frameColor ="#FFFF0" 
         self.frameLineWidth = 2
         self.dragPosition = None
         self.dragStartX = self.dragStartY = self.dragStartOffsetX = self.drawStartOffsetY = 0
@@ -405,6 +405,7 @@ class MainScrot:
                         self.y = eachCoord.y
                         self.rectWidth = eachCoord.width
                         self.rectHeight = eachCoord.height
+                self.iconIndex = -1
                 
                 self.window.queue_draw()
     
@@ -415,7 +416,7 @@ class MainScrot:
         '''Button release.'''
         self.dragFlag = False
         # print "buttonRelease: %s" % (str(event.get_root_coords()))
-        if self.action == ACTION_WINDOW:
+        if self.action == ACTION_WINDOW and not self.windowFlag:
             
             
             
@@ -504,6 +505,8 @@ class MainScrot:
             gtk.FILE_CHOOSER_ACTION_SAVE,
             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
              gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        
+        
         dialog.set_default_response(gtk.RESPONSE_OK)
         dialog.set_transient_for(self.window)
         dialog.set_position(gtk.WIN_POS_MOUSE)
@@ -521,6 +524,7 @@ class MainScrot:
         elif response in [gtk.RESPONSE_CANCEL, gtk.RESPONSE_REJECT, -4]:
             self.adjustToolbar()
             self.showToolbar()
+            self.iconIndex = -1
             print 'Closed, no files selected'
         dialog.destroy()
 
@@ -582,7 +586,7 @@ class MainScrot:
         
         if self.windowFlag and self.rectWidth:
             self.drawWindowRectangle(cr)
-            self.drawRoundRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight)
+            drawRoundTextRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight, '拖动可自由选区 %d x %d' % (self.rectWidth, self.rectHeight))
         
         elif self.rectWidth:
             
@@ -811,37 +815,7 @@ class MainScrot:
         
         self.window.queue_draw()
     
-    def drawRoundRectangle(self, cr, X, Y, Width, Height):
-        
-        x =  X + Width / 2 - 100
-        y = Y + Height / 2 - 14
-        width = 200
-        height = 28
-        r = height / 4.0
-        cr.set_source_rgba(0.14, 0.13, 0.15, 0.8)
-        #cr.set_source_rgba(0.1, 0.42, 0.66, 0.8)
-        cr.move_to(x+r, y)
-        cr.line_to(x+width-r,y)
-        
-        cr.move_to(x+width, y+r)
-        cr.line_to(x+width, y+height - r)
-        
-        cr.move_to(x+width-r,y+height)
-        cr.line_to(x+r, y+height)
-        
-        cr.move_to(x, y+height-r)
-        cr.line_to(x, y+r)
-        cr.arc(x+r, y+r, r, pi, 3*pi / 2)
-        cr.arc(x+width-r,y+r,r, 3*pi / 2, 2*pi)
-        cr.arc(x+width-r, y+height-r, r, 2*pi, pi / 2)
-        cr.arc(x+r, y+height-r, r, pi / 2, pi)    
-        cr.fill()
-        
-        cr.set_source_rgb(*colorHexToCairo('#FFFFFF'))
-        #cr.set_font_face('Monospace',cr.FONT_SLANT_NORMAL,cr.FONT_WEIGHT_BOLD)
-        cr.set_font_size(14.0)
-        cr.move_to(x + width / 12.0, y + height / 1.5)
-        cr.show_text('拖动可自由选区 %d x %d' % (Width, Height))
+
         
     
     def drawWindowRectangle(self, cr):
