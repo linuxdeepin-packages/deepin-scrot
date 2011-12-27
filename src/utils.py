@@ -25,6 +25,7 @@ import pygtk
 import gobject
 import pangocairo
 
+
 pygtk.require('2.0')
 
 def isCollideRect((cx, cy), (x, y, w, h)):
@@ -65,3 +66,6 @@ def showHelpTooltip(widget, helpText):
     widget.trigger_tooltip_query()
     
     return False
+
+     
+    

@@ -68,6 +68,7 @@ class MainScrot:
         self.toolbarHeight = 50
         
         # default window 
+        
         self.scrotWindowInfo = getScrotWindowInfo()
         self.windowFlag = True
 
@@ -84,6 +85,7 @@ class MainScrot:
         # Init window.
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.fullscreen()
+        self.window.set_icon_from_file("../theme/logo/deepin-scrot.ico")
         self.window.set_keep_above(True)
         
         # Init event handle.
@@ -111,11 +113,12 @@ class MainScrot:
         
         # Init text window.
         self.initTextWindow()
-        
+       
         # Show.
         self.window.show_all()
         
         gtk.main()
+        
 
         
     def initToolbar(self):
@@ -398,7 +401,20 @@ class MainScrot:
         else:
             if self.action == ACTION_SELECT:
                 self.setCursor(self.getPosition(event))
+           
+            elif self.action == ACTION_WINDOW:
+                setPixbufCursor(self.window, "start_cursor.png")
             
+            elif self.action in (ACTION_RECTANGLE, ACTION_ELLIPSE):
+                setCursor(self.window, gtk.gdk.TCROSS)
+            
+            elif self.action == ACTION_LINE:
+                setCursor(self.window, gtk.gdk.PENCIL)
+            
+            else:
+                self.window.window.set_cursor(None)
+                
+                
             if self.windowFlag:
                 self.hideToolbar()
                 (ex, ey) = self.getEventCoord(event)
@@ -411,6 +427,10 @@ class MainScrot:
                 self.iconIndex = -1
                 
                 self.window.queue_draw()
+        
+
+            
+
     
 
                     
@@ -570,11 +590,14 @@ class MainScrot:
             tipContent = __("Tip save to file")
             
         
+
         
         # Exit
         self.window.window.set_cursor(None)
         self.destroy(self.window)
-        cmd = ('python','draw.py', tipContent)
+        
+         # tipWindow
+        cmd = ('python','tipswindow.py', tipContent)
         subprocess.Popen(cmd)
 
         
@@ -719,6 +742,7 @@ class MainScrot:
         
     def destroy(self, widget, data=None):
         '''Destroy main window.'''
+        self.window.window.set_cursor(None)
         gtk.main_quit()
         
     def getDragPointCoords(self):

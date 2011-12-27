@@ -239,55 +239,9 @@ def drawFont(cr, content, fontSize, fontColor, x, y):
     cr.show_text(content)
 
 
-class tipWindow():
-    ''' tip window'''
-    def __init__(self, content):
-        ''' Init tip Window'''
-        screenWidth, screenHeight = gtk.gdk.get_default_root_window().get_size()
-        self.delta = 0.01
-        self.alpha = 1
-        self.content = content
-        self.tipWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.tipWindow.set_keep_above(True)
-        self.tipWindow.set_size_request(260, 30)
-        self.tipWindow.set_app_paintable(True)
-        self.tipWindow.set_decorated(False)
-        self.tipWindow.set_opacity(1)
-        self.tipWindow.move(screenWidth - 280 , 50)
-        self.tipWindow.connect('expose-event', self.tipExpose)
-        self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 8))
+def setPixbufCursor(widget, cursorName):
+    pixbuf = appTheme.getDynamicPixbuf(cursorName).getPixbuf()
+    display = widget.window.get_display()
+    widget.window.set_cursor(gtk.gdk.Cursor(display, pixbuf, 0, 0))
 
-        glib.timeout_add(40, lambda : self.timeoutHandler(self.tipWindow))
-        self.tipWindow.show()
-        
-        gtk.main()
-    
-    def tipExpose(self, widget, event, data=None):
-        self.alpha -= self.delta
-        widget.set_opacity(self.alpha)
-        
-        cr = widget.window.cairo_create()
-        width, height = widget.window.get_size()
-        cr.set_source_rgb(0.14, 0.13, 0.15)
-        drawRoundRectangle(cr, 0, 0, width, height, 5)
-        cr.fill()
-        drawFont(cr, self.content, 18, "#FFFF00", width / 15, 22)
-    
-    def getAlpha(self):
-        return self.alpha
-        
-    def timeoutHandler(self, widget):
-        if self.getAlpha() <= 0:
-            gtk.main_quit()
-            return False
-        widget.queue_draw()
-        return True
-    
-        
-        
-             
-        
-if __name__ == '__main__':
-    if len(sys.argv) >= 2:
-        tipWindow(sys.argv[1])
-        
+
