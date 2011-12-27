@@ -1,5 +1,21 @@
 * News in 1.0
 
+2011-12-26 Shaohui Hou <houshao55@gmail.com>
+	* Fixed window recognition bugs
+	* Add multinaltional language
+	* Add tool tip
+	* Add complete tip
+
+2011-12-22 Shaohui Hou <houshao55@gmail.com>
+	* Temporarily remove the text function
+	* Add Double-click save function
+	* Repair `undo` function of the two bugs
+
+2011-12-18 Shaohui Hou <houshao55@gmail.com>
+	* Add window recognition feature
+	* Change deepinScrot.py to mainscrot.py of in order to add more features
+	* New a 'deepinScrot.py' file as the master
+
 2011-11-22 Yong Wang <lazycat.manatee@gmail.com>
 	* Adjust names, and apply Zhang Cheng's patch, thanks!
 	* Add keymap.py, use `getKeyEventName` to handle key event in `key-press-event' signal.
