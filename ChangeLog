@@ -1,5 +1,10 @@
 * News in 1.0
 
+2011-12-29 Shaohui Hou <houshao55@gmail.com>
+	* Add delay taking the shot.
+	* Add command arguments
+	* repair a bug of locale 
+
 2011-12-27 Shaohui Hou <houshao55@gmail.com>
 	* Add logo
 	* Modify cursor

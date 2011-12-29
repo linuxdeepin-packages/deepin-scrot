@@ -35,7 +35,7 @@ if DEFAULT_LANG == None:
     if lang in ["zh_CN", "zh_TW"]:
         __ = gettext.translation('deepin-scrot', '../locale', languages=[lang]).gettext
     else:
-        __ = gettext.translation('deepin-scrot', '../locale', languages=[default]).gettext
+        __ = gettext.translation('deepin-scrot', '../locale', languages=["default"]).gettext
 
 else:
     __ = gettext.translation('deepin-scrot', '../locale', languages=[DEFAULT_LANG]).gettext

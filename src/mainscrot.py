@@ -67,8 +67,9 @@ class MainScrot:
         self.toolbarOffsetY = 10
         self.toolbarHeight = 50
         
-        # default window 
+
         
+        # default window 
         self.scrotWindowInfo = getScrotWindowInfo()
         self.windowFlag = True
 
@@ -113,11 +114,14 @@ class MainScrot:
         
         # Init text window.
         self.initTextWindow()
+        
        
         # Show.
         self.window.show_all()
         
         gtk.main()
+        
+
         
 
         
@@ -536,6 +540,7 @@ class MainScrot:
         dialog.set_default_response(gtk.RESPONSE_OK)
         #dialog.set_transient_for(self.window)
         dialog.set_position(gtk.WIN_POS_MOUSE)
+        dialog.set_local_only(True)
         
     
         dialog.set_current_folder(os.environ['HOME'])

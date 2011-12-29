@@ -20,12 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Xlib.display
+from Xlib import X, display, Xutil, Xcursorfont
 import gtk
 from  collections import namedtuple
 
 (screenWidth, screenHeight) = gtk.gdk.get_default_root_window().get_size()
-disp = Xlib.display.Display()
+disp = display.Display()
 rootWindow = disp.screen().root
 WM_HINTS = disp.intern_atom("WM_HINTS", True)
 WM_STATE = disp.intern_atom("WM_STATE", True)
@@ -77,11 +77,14 @@ def filterWindow():
     
 
 def getXlibPointerWindow():
-    ''' above window '''
+    ''' grab pointer window '''
     return rootWindow.query_pointer().child
 
+def getXlibFocusWindow():
+    ''' grab focus window'''
+    return disp.get_input_focus().focus
 
-
+    
 def isFullScreen(xlibWindow):
     '''whether is xlibWindow fullScreen '''
 
@@ -109,7 +112,10 @@ def getPointerWindowCoord():
     ''' get current Focus Window's Coord '''
     return getWindowCoord(getXlibPointerWindow())
 
-    
+def getFocusWindowCoord():
+    focusWindow = getXlibFocusWindow()
+    #(x, y, width, height) = getWindowCoord(focusWindow)
+    return getWindowCoord(focusWindow)
 
 def enumXlibWindow():
     ''' enumerate child window of rootWindow'''
@@ -117,13 +123,9 @@ def enumXlibWindow():
     return rootWindow.query_tree().children
 
 
-def getXlibWindowNid(xlibWindow):
-    ''' convert Xlib.display.Window to Nid(int type) '''
-    return int(str(xlibWindow)[20:30], 16)
-
 def xlibWindowToGtkWindow(xlibWindow):
     ''' convert Xlib's window to Gtk's window '''
-    return gtk.gdk.window_foreign_new(getXlibWindowNid(xlibWindow))
+    return gtk.gdk.window_foreign_new(xlibWindow.id)
 
 def getUsertimeWindow():
     '''Usertime Window  '''
@@ -133,12 +135,6 @@ def getUsertimeWindow():
        usertimeWindow[sequence_number] = eachWindow
     
     return sorted(usertimeWindow.iteritems(), key=lambda k: k[0], reverse=True)
-
-def getFocusWindowCoord():
-    ''' '''
-    windowDict = dict(getUsertimeWindow())
-    focusWindow = windowDict[max(windowDict.keys())]
-    return getWindowCoord(focusWindow)
     
     
 
@@ -158,8 +154,10 @@ def getWindowTitle(xlibWindow):
         return clientWindow.get_wm_name()
     return xlibWindow.get_wm_name()
 
-def convertCoord(x, y, width, height, xWidth, yHeight):
+def convertCoord(x, y, width, height):
     ''' cut out overlop the screen'''
+    xWidth = x + width
+    yHeight = y + height
        
     if x < 0 and y > 0 and  y < yHeight < screenHeight:
         return (0, y, width+x, height)
@@ -203,17 +201,28 @@ def getScrotWindowInfo():
         (x, y, width, height) = getWindowCoord(eachWindow)
         if x == y == 0 and (width,height) == (screenWidth, screenHeight):
             continue
-        scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height, x+width, y+height)))
+        scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height)))
     
 
     return scrotWindowInfo
 
 
+def getScrotPixbuf(fullscreen=True):
+    ''' save snapshot to file with filetype. '''
+    rootWindow = gtk.gdk.get_default_root_window() 
+    
+    if not fullscreen:
+        (x, y, width, height) = convertCoord(*getWindowCoord(getXlibPointerWindow()))
+    else:
+        (x, y, width, height, depth) = rootWindow.get_geometry() 
+    
+    pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, width, height)
+    pixbuf.get_from_drawable(rootWindow, rootWindow.get_colormap(), x, y, 0, 0, width, height)
+    return pixbuf
 
 
-if __name__ == '__main__':
-    print getScrotWindowInfo()
-    print getFocusWindowCoord()
+    
+
     
 
 
