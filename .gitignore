@@ -1,3 +1,5 @@
 *.pyc
 .#*
 repos.sh
+*.mo
+.gitignore
