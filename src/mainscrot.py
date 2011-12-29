@@ -56,7 +56,7 @@ class MainScrot:
         self.x = self.y = self.rectWidth = self.rectHeight = 0
         self.iconIndex = -1
         
-        self.frameColor ="#FFFF0" 
+        self.frameColor = "#FFFF0" 
         self.frameLineWidth = 2
         self.dragPosition = None
         self.dragStartX = self.dragStartY = self.dragStartOffsetX = self.drawStartOffsetY = 0
@@ -218,7 +218,7 @@ class MainScrot:
         self.textWindow.show_all()
         self.textWindow.move(ex, ey)
         self.textWindow.set_geometry_hints(
-            self.textView, -1, -1, 
+            self.textView, -1, -1,
             self.x + self.rectWidth - ex - offset,
             self.y + self.rectHeight - ey - offset,
             self.x + self.rectWidth - ex - offset,
@@ -284,12 +284,13 @@ class MainScrot:
         return (int(rx), int(ry))
         
     def buttonPress(self, widget, event):
+        
+            
         '''Button press.'''
         self.dragFlag = True
         # print "*****"
         # print "buttonPress: %s" % (str(event.get_root_coords()))
         if self.action == ACTION_WINDOW:
-            if self.x or self.y or self.rectWidth or self.rectHeight:
                 self.windowFlag = False
             
         elif self.action == ACTION_INIT:
@@ -349,7 +350,7 @@ class MainScrot:
             # print "motionNotify: %s" % (str(event.get_root_coords()))
             (ex, ey) = self.getEventCoord(event)
             
-            if self.action == ACTION_WINDOW and not self.windowFlag:
+            if self.action == ACTION_WINDOW and not self.windowFlag: 
                 
                 self.iconIndex = -1
                 self.action = ACTION_INIT
@@ -431,25 +432,21 @@ class MainScrot:
                 self.iconIndex = -1
                 
                 self.window.queue_draw()
-        
-
-            
-
-    
-
                     
         
     def buttonRelease(self, widget, event):
+            
         '''Button release.'''
         self.dragFlag = False
         # print "buttonRelease: %s" % (str(event.get_root_coords()))
-        if self.action == ACTION_WINDOW and not self.windowFlag:
-            
-            
-            
-            self.showToolbar()
-            self.action = ACTION_SELECT
-            self.window.queue_draw()
+        if self.action == ACTION_WINDOW:
+            if self.rectWidth > 5 and self.rectHeight > 5:
+                self.showToolbar()
+                self.action = ACTION_SELECT
+                self.window.queue_draw()
+            else:
+                self.windowFlag = True
+                
             
         elif self.action == ACTION_INIT:
             self.action = ACTION_SELECT
@@ -602,7 +599,7 @@ class MainScrot:
         self.destroy(self.window)
         
          # tipWindow
-        cmd = ('python','tipswindow.py', tipContent)
+        cmd = ('python', 'tipswindow.py', tipContent)
         subprocess.Popen(cmd)
 
         
@@ -631,7 +628,7 @@ class MainScrot:
         
         if self.windowFlag and self.rectWidth:
             self.drawWindowRectangle(cr)
-            drawRoundTextRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight, '%s %d x %d' % (__("Tip Drag"),self.rectWidth, self.rectHeight))
+            drawRoundTextRectangle(cr, self.x, self.y, self.rectWidth, self.rectHeight, '%s %d x %d' % (__("Tip Drag"), self.rectWidth, self.rectHeight))
         
         elif self.rectWidth:
             
@@ -754,7 +751,7 @@ class MainScrot:
         '''Get drag point coords.'''
         return (
             # Top left.
-            (self.x - self.dragPointRadius, self.y - self.dragPointRadius), 
+            (self.x - self.dragPointRadius, self.y - self.dragPointRadius),
             # Top right.
             (self.x + self.rectWidth - self.dragPointRadius, self.y - self.dragPointRadius),
             # Bottom left.
