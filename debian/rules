@@ -1,4 +1,12 @@
 #!/usr/bin/make -f
-
 %:
 	dh $@ --with python2
+
+override_dh_installdirs:
+	dh_installdirs
+	for pofile in locale/*/LC_MESSAGES/*.po; do \
+	    f=`basename $$pofile .po`; \
+	    d=`dirname $$pofile`; \
+	    mkdir -p debian/deepin-scrot/usr/share/deepin-scrot/$$d/; \
+	    msgfmt $$pofile -o debian/deepin-scrot/usr/share/deepin-scrot/$$d/$$f.mo; \
+	done
