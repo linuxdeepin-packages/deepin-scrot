@@ -20,9 +20,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# locale
+import gtk, os, sys, time
+if not os.path.exists("../locale/zh_CN/LC_MESSAGES/deepin-scrot.mo"):
+    os.system("sh updateTranslate.sh")
+
 
 from mainscrot import MainScrot
-import gtk, os, sys, time
 from window import getScrotPixbuf
 from optparse import OptionParser
 from tipswindow import countdownWindow
