@@ -45,6 +45,9 @@ class tipWindow():
         self.tipWindow.set_opacity(1)
         self.tipWindow.set_skip_taskbar_hint(True)
         self.tipWindow.set_skip_pager_hint(True)
+
+    
+        
         self.tipWindow.move(screenWidth - 250 , 50)
         self.tipWindow.connect('expose-event', self.tipExpose)
         self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 4))
