@@ -3,3 +3,4 @@
 repos.sh
 *.mo
 .gitignore
+locale/
