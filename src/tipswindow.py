@@ -43,6 +43,8 @@ class tipWindow():
         self.tipWindow.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("black"))
         self.tipWindow.set_icon_from_file("../theme/logo/deepin-scrot.ico")
         self.tipWindow.set_opacity(1)
+        self.tipWindow.set_skip_taskbar_hint(True)
+        self.tipWindow.set_skip_pager_hint(True)
         self.tipWindow.move(screenWidth - 250 , 50)
         self.tipWindow.connect('expose-event', self.tipExpose)
         self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 4))
@@ -97,6 +99,8 @@ class countdownWindow():
         self.paddingX = 10
         
         self.tipWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.tipWindow.set_skip_taskbar_hint(True)
+        self.tipWindow.set_skip_pager_hint(True)
         self.tipWindow.set_keep_above(True)
         self.tipWindow.set_size_request(100, 100)
         self.tipWindow.set_decorated(False)
