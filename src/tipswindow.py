@@ -22,6 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import gtk
 from draw import *
 import sys
@@ -40,6 +41,7 @@ class tipWindow():
         self.tipWindow.set_keep_above(True)
         self.tipWindow.set_size_request(-1, -1)
         self.tipWindow.set_decorated(False)
+        self.tipWindow.set_accept_focus(False)
         self.tipWindow.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("black"))
         self.tipWindow.set_icon_from_file("../theme/logo/deepin-scrot.ico")
         self.tipWindow.set_opacity(1)
@@ -48,13 +50,13 @@ class tipWindow():
 
     
         
-        self.tipWindow.move(screenWidth - 250 , 50)
+        self.tipWindow.move(screenWidth - 250 , 34)
         self.tipWindow.connect('expose-event', self.tipExpose)
         self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 4))
         
         # Create tooltips label.
         self.label = gtk.Label()
-        self.label.set_markup("<span foreground='#FFFF00' size='12000'>%s</span>" % (content))
+        self.label.set_markup("<span foreground='#00AEFF' size='12000'>%s</span>" % (content))
         self.label.set_single_line_mode(True) # just one line
         self.align = gtk.Alignment()
         self.align.set(0.5, 0.5, 0, 0)
@@ -108,15 +110,16 @@ class countdownWindow():
         self.tipWindow.set_size_request(100, 100)
         self.tipWindow.set_decorated(False)
         self.tipWindow.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse("black"))
+        self.tipWindow.set_accept_focus(False)
         self.tipWindow.set_icon_from_file("../theme/logo/deepin-scrot.ico")
         self.tipWindow.set_opacity(0.8)
-        self.tipWindow.move(screenWidth - 200 , 50)
+        self.tipWindow.move(screenWidth - 200 , 34)
         self.tipWindow.connect('expose-event', self.tipExpose)
         self.tipWindow.connect("size-allocate", lambda w, a: updateShape(w, a, 4))
         
         # Create tooltips label.
         self.label = gtk.Label()
-        self.label.set_markup("<span foreground='#FFFF00' size='36000'>%d</span>" % (self.count))
+        self.label.set_markup("<span foreground='#00AEFF' size='36000'>%d</span>" % (self.count))
         self.label.set_single_line_mode(True) # just one line
         self.align = gtk.Alignment()
         self.align.set(0.5, 0.5, 1.0, 1.0)
@@ -129,7 +132,7 @@ class countdownWindow():
         gtk.main()
     
     def tipExpose(self, widget, event, data=None):
-        self.label.set_markup("<span foreground='#FFFF00' size='36000'>%d</span>" % (self.count))
+        self.label.set_markup("<span foreground='#00AEFF' size='36000'>%d</span>" % (self.count))
         cr = widget.window.cairo_create()
         width, height = widget.window.get_size()
         cr.set_source_rgb(0.14, 0.13, 0.15)

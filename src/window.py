@@ -194,13 +194,11 @@ def getScrotWindowInfo():
     ''' return (x, y, width, height) '''
     coordInfo = namedtuple('coord', 'x y width height')
     scrotWindowInfo = []
-    
+    scrotWindowInfo.append(coordInfo(0, 0, screenWidth, screenHeight))
     #(cx, cy, cWidth, cHeight) = getPointerWindowCoord()
     
     for eachWindow in filterWindow():
         (x, y, width, height) = getWindowCoord(eachWindow)
-        if x == y == 0 and (width,height) == (screenWidth, screenHeight):
-            continue
         scrotWindowInfo.append(coordInfo(*convertCoord(x, y, width, height)))
     
 

@@ -1,5 +1,6 @@
-#! /usr/bin/env python
+
 # -*- coding: utf-8 -*-
+#! /usr/bin/env python
 
 # Copyright (C) 2011 Deepin, Inc.
 #               2011 Wang Yong
@@ -22,6 +23,9 @@
 
 from math import *
 from draw import *
+from constant import *
+import pango
+import pangocairo
 
 class Action:
     '''Action'''
@@ -62,6 +66,10 @@ class RectangleAction(Action):
         cr.set_line_width(self.size)
         cr.rectangle(self.startX, self.startY, (self.endX - self.startX), (self.endY - self.startY))
         cr.stroke()
+   
+    def getActionType(self):
+        ''' get action type.'''
+        return ACTION_RECTANGLE
 
 class EllipseAction(Action):
     '''Ellipse action.'''
@@ -83,6 +91,10 @@ class EllipseAction(Action):
             drawEllipse(cr, self.startX + ew / 2, self.startY + eh / 2, fabs(ew), fabs(eh), 
                         self.color, self.size)
 
+    def getActionType(self):
+        ''' get action type.'''
+        return ACTION_ELLIPSE            
+   
 class ArrowAction(Action):
     '''Arrow action.'''
 	
@@ -97,8 +109,12 @@ class ArrowAction(Action):
         
     def expose(self, cr):
         '''Expose.'''
+        #print self.endX, self.endY
         drawArrow(cr, (self.startX, self.startY), (self.endX, self.endY),
                   self.color, self.size)
+    def getActionType(self):
+        ''' get action type.'''
+        return ACTION_ARROW
 
 class LineAction(Action):
     '''Line action.'''
@@ -113,8 +129,7 @@ class LineAction(Action):
         newY = min((max(ey, ry)), ry + rh)
         self.endX = newX
         self.endY = newY
-        
-        if self.track == []:
+        if self.track == []:        
             self.track.append((newX, newY))
         elif self.track[-1] != (newX, newY):
             self.track.append((newX, newY))
@@ -122,24 +137,78 @@ class LineAction(Action):
     def expose(self, cr):
         '''Expose.'''
         if len(self.track) > 0:
+            cr.set_line_width(self.size)
             cr.move_to(*self.track[0])
             for (px, py) in self.track[1:]:
                 cr.line_to(px, py)
 
             cr.set_source_rgb(*colorHexToCairo(self.color))
             cr.stroke()
+            
+    def getActionType(self):
+        ''' get action type.'''
+        return ACTION_LINE            
 
 class TextAction(Action):
     '''Text action.'''
 	
-    def __init__(self, aType, size, color, content):
+    def __init__(self, aType, size, color, fontname, content):
         '''Text action.'''
         Action.__init__(self, aType, size, color)
         self.content = content
+        self.fontname = fontname
+        
         
     def expose(self, cr):
         '''Expose.'''
+
+        cr.move_to(self.startX, self.startY)
+        context = pangocairo.CairoContext(cr)
+        self.layout = context.create_layout()
+        self.layout.set_font_description(pango.FontDescription(self.fontname))
+        self.layout.set_text(self.content)
         cr.set_source_rgb(*colorHexToCairo(self.color))
-        cr.set_font_size(self.size)
-        cr.move_to(self.startX, self.startY + self.size)
-        cr.show_text(self.content)
+        context.update_layout(self.layout)
+        context.show_layout(self.layout)
+ 
+        
+    def updateCoord(self, x, y):
+        "update arguments"
+        self.startX = x
+        self.startY = y
+        
+        
+    def update(self, color, fontname, content):
+        self.color = color
+        self.fontname = fontname 
+        self.content = content
+
+    def getLayoutInfo(self):
+        ''' get layout (x, y, width, height) '''
+        return (self.startX, self.startY, 
+                self.layout.get_size()[0] / pango.SCALE,
+                self.layout.get_size()[1] / pango.SCALE)
+
+    def getContent(self):
+        '''get Content '''
+        return self.content
+
+    def getColor(self):
+        ''' get color '''
+        return self.color
+
+    def getFontname(self):
+        return self.fontname
+    
+    def getActionType(self):
+        ''' get action type.'''
+        return ACTION_TEXT    
+ 
+
+
+        
+
+
+
+
+
