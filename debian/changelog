@@ -1,3 +1,10 @@
+deepin-scrot (2.0-0deepin) oneiric; urgency=low
+
+  * New Upstream release. 
+  * Install gconf default settings.
+
+ -- YunQiang Su <wzssyqa@gmail.com>  Tue, 28 Feb 2012 10:41:02 +0800
+
 deepin-scrot (1.0.2) oneiric; urgency=low
 
   * Fix bug

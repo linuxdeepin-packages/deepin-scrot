@@ -1,0 +1,10 @@
+/apps/metacity/keybinding_commands/command_deepin_scrot_area deepin-scrot
+/apps/metacity/global_keybindings/run_command_deepin_scrot_area <Control><Alt>A
+/apps/metacity/keybinding_commands/command_deepin_scrot_desktop_5s "deepin-scrot -f -d 5"
+/apps/metacity/global_keybindings/run_command_deepin_scrot_desktop_5s <Control>Print
+/apps/metacity/keybinding_commands/command_deepin_scrot_window_5s "deepin-scrot -w -d 5"
+/apps/metacity/global_keybindings/run_command_deepin_scrot_window_5s <Control><Alt>Print
+/apps/metacity/keybinding_commands/command_screenshot "deepin-scrot -f"
+/apps/metacity/global_keybindings/run_command_screenshot Print
+/apps/metacity/keybinding_commands/command_window_screenshot "deepin-scrot -w"
+/apps/metacity/global_keybindings/run_command_window_screenshot <Alt>Print

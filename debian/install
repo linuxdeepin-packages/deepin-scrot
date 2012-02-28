@@ -1,2 +1,3 @@
 src /usr/share/deepin-scrot
 theme /usr/share/deepin-scrot
+debian/10_deepin-scrot-keybinding.gconf /usr/share/gconf/defaults/
