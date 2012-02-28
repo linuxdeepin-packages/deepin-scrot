@@ -24,7 +24,8 @@ import gtk
 import pygtk
 import gobject
 import pangocairo
-
+import sys
+import time
 
 pygtk.require('2.0')
 
@@ -35,6 +36,20 @@ def isCollideRect((cx, cy), (x, y, w, h)):
 def isInRect((cx, cy), (x, y, w, h)):
     '''Whether coordinate in rectangle.'''
     return (x < cx < x + w and y < cy < y + h)
+
+def setClickableCursor(widget):
+    '''Set click-able cursor.'''
+    # Use widget in lambda, and not widget pass in function.
+    # Otherwise, if widget free before callback, you will got error:
+    # free variable referenced before assignment in enclosing scope, 
+    widget.connect("enter-notify-event", lambda w, e: setCursor(w, gtk.gdk.HAND2))
+    widget.connect("leave-notify-event", lambda w, e: setDefaultCursor(w))
+
+def setDefaultCursor(widget):
+    '''Set default cursor.'''
+    widget.window.set_cursor(None)
+    
+    return False
 
 def setCursor(widget, cursorType):
     '''Set cursor.'''
@@ -53,7 +68,7 @@ def isDoubleClick(event):
 def getFontFamilies():
     '''Get all font families in system.'''
     fontmap = pangocairo.cairo_font_map_get_default()
-    return map (lambda f: f.get_name(), fontmap.list_families())
+    return map(lambda f: f.get_name(), fontmap.list_families())
 
 def setHelpTooltip(widget, helpText):
     '''Set help tooltip.'''
@@ -67,5 +82,44 @@ def showHelpTooltip(widget, helpText):
     
     return False
 
+def modifyBackground(widget, color):
+    ''' modify widget background'''
+    widget.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse(color))
+
+def gdkColorToString(gdkcolor):
+    '''gdkColor to string '''
+    return "#%0.2x%0.2x%0.2x" % (gdkcolor.red / 256, gdkcolor.green / 256, gdkcolor.blue / 256)
      
-    
+def encode(text):
+    return unicode(text, sys.getfilesystemencoding())
+
+def getCoordRGB(widget, x, y):
+    '''get coordinate's pixel. '''
+    width, height = widget.get_size()
+    colormap = widget.get_window().get_colormap()
+    image = gtk.gdk.Image(gtk.gdk.IMAGE_NORMAL, widget.window.get_visual(), width, height)
+    image.set_colormap(colormap)
+    gdkcolor =  colormap.query_color(image.get_pixel(x, y))
+    return (gdkcolor.red / 256, gdkcolor.green / 256, gdkcolor.blue / 256)
+
+def containerRemoveAll(container):
+    ''' Removee all child widgets for container. '''
+    container.foreach(lambda widget: container.remove(widget))
+
+
+def makeMenuItem(name, callback, data=None):
+    item = gtk.MenuItem(name)
+    item.connect("activate", callback, data)
+    item.show()
+    return item
+
+def getFormatTime():
+    return time.strftime("%M%S", time.localtime())
+
+def moveWindow(widget, event, window):
+    ''' Move Window.'''
+    window.begin_move_drag(
+        event.button,
+        int(event.x_root),
+        int(event.y_root),
+        event.time)

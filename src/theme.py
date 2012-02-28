@@ -53,7 +53,7 @@ class Theme:
         for root, dirs, files in os.walk(themeDir):
             for filepath in files:
                 path = (os.path.join(root, filepath)).split(themeDir)[1]
-                self.pixbufDict[path] = DynamicPixbuf(self.getThemePath(path))
+                self.pixbufDict[filepath] = DynamicPixbuf(self.getThemePath(path))
     
     def getThemeDir(self):
         '''Get theme directory.'''

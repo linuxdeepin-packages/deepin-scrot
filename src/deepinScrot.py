@@ -22,15 +22,13 @@
 
 # locale
 import gtk, os, sys, time
-if not os.path.exists("../locale/zh_CN/LC_MESSAGES/deepin-scrot.mo"):
-    os.system("sh updateTranslate.sh")
-
-
 from mainscrot import MainScrot
 from window import getScrotPixbuf
 from optparse import OptionParser
 from tipswindow import countdownWindow
-
+from utils import makeMenuItem, getFormatTime
+from constant import DEFAULT_FILENAME
+saveFiletype = "png"
 
 def openFileDialog(fullscreen=True, filetype='png'):
     '''Save file to file.'''
@@ -39,34 +37,63 @@ def openFileDialog(fullscreen=True, filetype='png'):
                                    "Save..",
                                    None,
                                    gtk.FILE_CHOOSER_ACTION_SAVE,
-                                   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                    gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+                                   (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                                    gtk.STOCK_SAVE, gtk.RESPONSE_ACCEPT))
         
-    pngFilter = gtk.FileFilter()
-    pngFilter.set_name("png")
-    pngFilter.add_pattern("*.png")
-    dialog.add_filter(pngFilter)
-    dialog.set_default_response(gtk.RESPONSE_OK)
-    #dialog.set_transient_for(self.window)
-    dialog.set_position(gtk.WIN_POS_MOUSE)
+
+    dialog.set_default_response(gtk.RESPONSE_ACCEPT)
+    dialog.set_position(gtk.WIN_POS_CENTER)
     dialog.set_local_only(True)
         
     
     dialog.set_current_folder(os.environ['HOME'])
-    dialog.set_current_name("deepinscort-" + time.strftime("%M%S.png", time.localtime()))
+    dialog.set_current_name("%s%s.%s" % (DEFAULT_FILENAME, getFormatTime(), saveFiletype))
+
+       
         
+
+    optionMenu = gtk.OptionMenu()
+    optionMenu.set_size_request(155, -1)
+    menu = gtk.Menu()
+    menu.set_size_request(155, -1)
+    
+    pngItem = makeMenuItem('PNG (*.png)',
+                 lambda item, data: setSaveFiletype(dialog, 'png'))
+    
+    jpgItem = makeMenuItem('JPEG (*.jpeg)',
+                 lambda item, data: setSaveFiletype(dialog, 'jpeg'))
+    
+    bmpItem = makeMenuItem('BMP (*.bmp)',
+                 lambda item, data: setSaveFiletype(dialog, 'bmp'))
+    
+    
+    
+    
+    menu.append(pngItem)
+    menu.append(jpgItem)
+    menu.append(bmpItem)
+    optionMenu.set_menu(menu)
+    
+    
+    hbox = gtk.HBox()
+    hbox.pack_end(optionMenu, False, False)
+    dialog.vbox.pack_start(hbox, False, False)
+    hbox.show_all()                          
+            
     response = dialog.run()
         
-    if response in [gtk.RESPONSE_OK, gtk.RESPONSE_ACCEPT]:
+    if response == gtk.RESPONSE_ACCEPT:
         filename = dialog.get_filename()
         pixbuf.save(filename, filetype)
         print "Save snapshot to %s" % (filename)
-    elif response in [gtk.RESPONSE_CANCEL, gtk.RESPONSE_REJECT, -4]:
+    elif response == gtk.RESPONSE_REJECT:
         print 'Closed, no files selected'
     dialog.destroy()
 
-
-
+def setSaveFiletype(widget, filetype):
+    widget.set_current_name("%s%s.%s" % (DEFAULT_FILENAME, getFormatTime(), filetype))
+    saveFiletype =filetype
+       
 
 def processArguments():
     '''init processArguments '''
